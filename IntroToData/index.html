@@ -1,352 +1,434 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ปฏิบัติการตวงน้ำเป๊ะ!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        /* --- General Styles --- */
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: #f4f9fd;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            user-select: none;
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Settings, Play, Database, ListChecks, Network, ArrowRight, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+
+const ITEMS = ['นม', 'ขนมปัง', 'เนย', 'แยม', 'ไข่'];
+
+// --- Helper Functions สำหรับ Algorithm ---
+const getCombinations = (array, size) => {
+  const result = [];
+  const p = (t, i) => {
+    if (t.length === size) {
+      result.push(t);
+      return;
+    }
+    if (i + 1 > array.length) {
+      return;
+    }
+    p([...t, array[i]], i + 1);
+    p(t, i + 1);
+  };
+  p([], 0);
+  return result;
+};
+
+const roundHalfUp = (n, decimals = 2) => {
+  const multiplier = Math.pow(10, decimals);
+  return Math.floor(n * multiplier + 0.5) / multiplier;
+};
+
+export default function App() {
+  const [numTx, setNumTx] = useState(10);
+  const [matrix, setMatrix] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [minSup, setMinSup] = useState(0.3);
+  const [minConf, setMinConf] = useState(0.5);
+  
+  const [activeTab, setActiveTab] = useState('data');
+  const [analysisSteps, setAnalysisSteps] = useState([]);
+  const [frequentItemsets, setFrequentItemsets] = useState({});
+  const [associationRules, setAssociationRules] = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // สุ่มข้อมูล
+  const generateData = () => {
+    const txCount = Math.floor(Math.random() * 5) + 8; // 8-12
+    setNumTx(txCount);
+    
+    const newMatrix = [];
+    const newTx = [];
+    
+    for (let i = 0; i < txCount; i++) {
+      let row;
+      while (true) {
+        row = ITEMS.map(() => (Math.random() > 0.5 ? 1 : 0));
+        if (row.reduce((a, b) => a + b, 0) > 0) break; // ห้ามตะกร้าเปล่า
+      }
+      newMatrix.push(row);
+      
+      const itemsInTx = new Set(ITEMS.filter((_, idx) => row[idx] === 1));
+      newTx.push(itemsInTx);
+    }
+    
+    setMatrix(newMatrix);
+    setTransactions(newTx);
+    setAnalysisSteps([]);
+    setAssociationRules([]);
+    setFrequentItemsets({});
+  };
+
+  useEffect(() => {
+    generateData();
+  }, []);
+
+  const getSupport = (itemsetArray) => {
+    let count = 0;
+    for (const t of transactions) {
+      const isSubset = itemsetArray.every(item => t.has(item));
+      if (isSubset) count++;
+    }
+    return count / transactions.length;
+  };
+
+  const runApriori = () => {
+    setIsAnalyzing(true);
+    setActiveTab('steps');
+    
+    setTimeout(() => {
+      let k = 1;
+      let currentItemsets = ITEMS.map(item => [item]);
+      const stepsLog = [];
+      const allFreq = {};
+
+      while (currentItemsets.length > 0) {
+        const stepDetail = { k, candidates: [], passed: [], failed: [] };
+        const nextFrequent = [];
+
+        for (const itemset of currentItemsets) {
+          const supRaw = getSupport(itemset);
+          const sup = roundHalfUp(supRaw, 2);
+          
+          const resultObj = { itemset, support: sup };
+          stepDetail.candidates.push(resultObj);
+
+          if (sup >= minSup) {
+            stepDetail.passed.push(resultObj);
+            nextFrequent.push(itemset);
+            allFreq[itemset.join(',')] = sup;
+          } else {
+            stepDetail.failed.push(resultObj);
+          }
         }
 
-        /* --- Header --- */
-        .header-container { text-align: center; margin-bottom: 20px; }
-        .game-logo {
-            max-width: 150px; height: auto; border-radius: 15px;
-            margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        h1 { margin: 0; color: #2c3e50; font-size: 1.8rem; }
+        stepsLog.push(stepDetail);
+
+        if (nextFrequent.length === 0) break;
+
+        // สร้าง Candidate รอบถัดไป
+        k++;
+        const validItems = new Set();
+        nextFrequent.forEach(itemset => itemset.forEach(item => validItems.add(item)));
         
-        .mission-badge {
-            display: inline-block;
-            background: #2980b9;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-        }
-
-        /* --- Game Area --- */
-        .game-area {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 15px;
-            margin: 30px 0;
-            width: 100%;
-            max-width: 500px;
-            height: 250px; /* Fix height for alignment */
-        }
-
-        .jug-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            flex: 1;
-            transition: transform 0.1s;
-        }
-        .jug-container:active { transform: scale(0.95); }
-
-        .jug {
-            width: 100%; max-width: 80px;
-            background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
-            border: 3px solid #34495e;
-            border-top: none;
-            border-radius: 0 0 20px 20px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: height 0.3s ease; /* Animation for resizing jugs */
-        }
-
-        .water {
-            width: 100%;
-            background-color: #00a8ff;
-            transition: height 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            position: relative;
-        }
-        .water::after {
-            content: ''; position: absolute; width: 100%; height: 5px;
-            background: rgba(255,255,255,0.3); top: 0;
-        }
-
-        .jug-label {
-            margin-top: 8px; font-weight: 600; color: #2c3e50;
-            background: white; padding: 2px 10px; border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Selected State */
-        .selected .jug { border-color: #ff9f43; box-shadow: 0 0 15px rgba(255, 159, 67, 0.6); }
-        .selected .jug-label { color: #e67e22; background-color: #fff3cd; }
-
-        /* --- Controls --- */
-        .controls { width: 100%; text-align: center; }
-        #status-text { font-size: 1.1rem; height: 1.5em; color: #ff9f43; font-weight: 600; margin-bottom: 15px; }
+        const validItemsArr = Array.from(validItems);
+        currentItemsets = getCombinations(validItemsArr, k);
         
-        .btn {
-            border: none; padding: 12px 30px; font-size: 1rem; border-radius: 50px;
-            cursor: pointer; font-family: 'Kanit', sans-serif; transition: all 0.2s;
-            color: white; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        // กรองแบบง่าย (ไม่เช็ค Subset อย่างละเอียดเหมือน Python เพื่อความเร็ว)
+        currentItemsets = currentItemsets.filter(candidate => {
+           const sub = getCombinations(candidate, k-1);
+           return sub.every(s => nextFrequent.some(nf => nf.join(',') === s.join(',')));
+        });
+      }
+
+      setAnalysisSteps(stepsLog);
+      setFrequentItemsets(allFreq);
+
+      // --- สร้าง กฎความสัมพันธ์ (Association Rules) ---
+      const rules = [];
+      Object.keys(allFreq).forEach(itemsetStr => {
+        const items = itemsetStr.split(',');
+        if (items.length < 2) return; // กฎต้องมีอย่างน้อย 2 ชิ้น
+
+        const supportXY = allFreq[itemsetStr];
+
+        for (let i = 1; i < items.length; i++) {
+          const antecedentsList = getCombinations(items, i);
+          
+          antecedentsList.forEach(antecedent => {
+            const consequent = items.filter(x => !antecedent.includes(x));
+            
+            const supportX = getSupport(antecedent);
+            const supportY = getSupport(consequent);
+            
+            const confidence = roundHalfUp(supportXY / supportX, 2);
+            const lift = roundHalfUp(confidence / supportY, 2);
+
+            if (confidence >= minConf) {
+              rules.push({
+                antecedent,
+                consequent,
+                support: roundHalfUp(supportXY, 2),
+                confidence,
+                lift
+              });
+            }
+          });
         }
-        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
-        .btn-reset { background-color: #34495e; }
+      });
+      
+      // ลบกฎที่ซ้ำและเรียงลำดับตาม Lift
+      const uniqueRules = rules.reduce((acc, current) => {
+        const x = acc.find(item => item.antecedent.join(',') === current.antecedent.join(',') && item.consequent.join(',') === current.consequent.join(','));
+        if (!x) { return acc.concat([current]); } else { return acc; }
+      }, []);
+      
+      setAssociationRules(uniqueRules.sort((a, b) => b.lift - a.lift));
+      setIsAnalyzing(false);
+    }, 500); // หน่วงเวลาให้ดูมีเอฟเฟกต์ประมวลผล
+  };
 
-        /* --- Secret Input Section --- */
-        .secret-area {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px dashed #ccc;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-        }
-        .input-code {
-            padding: 8px 15px; border: 2px solid #bdc3c7; border-radius: 20px;
-            font-family: 'Kanit', sans-serif; outline: none; width: 150px; text-align: center;
-        }
-        .btn-code { background-color: #e67e22; padding: 8px 20px; font-size: 0.9rem; }
-
-        /* --- Win Overlay --- */
-        #win-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9); z-index: 1000;
-            flex-direction: column; justify-content: center; align-items: center;
-            color: white; animation: fadeIn 0.3s;
-        }
-        #win-overlay h2 { font-size: 2.5rem; color: #2ecc71; margin-bottom: 10px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    </style>
-</head>
-<body>
-
-    <div class="header-container">
-        <img src="https://share.google/HKKgaVfyM368m4RJm" alt="Logo" class="game-logo" onerror="this.style.display='none'">
-        <h1>ปฏิบัติการตวงน้ำเป๊ะ!</h1>
-        <div class="mission-badge" id="mission-text">ด่าน 1: เป้าหมาย 4-4-0</div>
-    </div>
-
-    <div class="game-area">
-        <div class="jug-container" id="jug-0" onclick="clickJug(0)">
-            <div class="jug" id="jug-vis-0">
-                <div class="water" id="water-0" style="height: 0%"></div>
-            </div>
-            <div class="jug-label"><span id="val-0">0</span> / <span id="max-0">8</span></div>
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 p-4 md:p-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-indigo-700 flex items-center gap-2">
+              <Network className="w-8 h-8" />
+              Apriori Algorithm Dashboard
+            </h1>
+            <p className="text-slate-500 mt-1">ระบบจำลองการหาความสัมพันธ์สินค้าแบบโต้ตอบ</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={generateData}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" /> สุ่มข้อมูลใหม่
+            </button>
+            <button 
+              onClick={runApriori}
+              disabled={isAnalyzing}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm transition-colors disabled:opacity-50"
+            >
+              {isAnalyzing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              เริ่มวิเคราะห์
+            </button>
+          </div>
         </div>
-        <div class="jug-container" id="jug-1" onclick="clickJug(1)">
-            <div class="jug" id="jug-vis-1">
-                <div class="water" id="water-1" style="height: 0%"></div>
+
+        {/* Configurations */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="font-semibold flex items-center gap-2 mb-4 text-slate-700">
+              <Settings className="w-5 h-5 text-indigo-500" />
+              ตั้งค่าพารามิเตอร์ (Parameters)
+            </h3>
+            
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-slate-600">Minimum Support (minsup)</label>
+                  <span className="text-sm font-bold text-indigo-600">{minSup.toFixed(2)} ({(minSup*100).toFixed(0)}%)</span>
+                </div>
+                <input 
+                  type="range" min="0.1" max="1.0" step="0.05" 
+                  value={minSup} onChange={(e) => setMinSup(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <p className="text-xs text-slate-400 mt-1">ความถี่ขั้นต่ำที่กลุ่มสินค้าต้องปรากฏร่วมกัน</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-sm font-medium text-slate-600">Minimum Confidence (minconf)</label>
+                  <span className="text-sm font-bold text-teal-600">{minConf.toFixed(2)} ({(minConf*100).toFixed(0)}%)</span>
+                </div>
+                <input 
+                  type="range" min="0.1" max="1.0" step="0.05" 
+                  value={minConf} onChange={(e) => setMinConf(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-500"
+                />
+                <p className="text-xs text-slate-400 mt-1">ความน่าจะเป็นที่จะซื้อสินค้า B เมื่อซื้อสินค้า A ไปแล้ว</p>
+              </div>
             </div>
-            <div class="jug-label"><span id="val-1">0</span> / <span id="max-1">5</span></div>
-        </div>
-        <div class="jug-container" id="jug-2" onclick="clickJug(2)">
-            <div class="jug" id="jug-vis-2">
-                <div class="water" id="water-2" style="height: 0%"></div>
+          </div>
+
+          <div className="bg-indigo-50 p-6 rounded-2xl shadow-sm border border-indigo-100 flex flex-col justify-center">
+            <h3 className="font-semibold text-indigo-800 mb-2">สรุปจำนวนข้อมูล</h3>
+            <div className="flex items-end gap-2">
+              <span className="text-5xl font-black text-indigo-600">{numTx}</span>
+              <span className="text-indigo-400 font-medium mb-1">Transactions</span>
             </div>
-            <div class="jug-label"><span id="val-2">0</span> / <span id="max-2">3</span></div>
+            <p className="text-sm text-indigo-600/80 mt-2">
+              ระบบสุ่มข้อมูลแบบ 0 (ไม่ซื้อ) / 1 (ซื้อ) จำนวน {numTx} ตะกร้า โดยมีสินค้าทั้งหมด {ITEMS.length} ชนิด
+            </p>
+          </div>
         </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-1 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+          <button
+            onClick={() => setActiveTab('data')}
+            className={`flex-1 py-2.5 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-all ${activeTab === 'data' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+          >
+            <Database className="w-4 h-4" /> ข้อมูลดิบ (Raw Data)
+          </button>
+          <button
+            onClick={() => setActiveTab('steps')}
+            className={`flex-1 py-2.5 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-all ${activeTab === 'steps' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+          >
+            <ListChecks className="w-4 h-4" /> ขั้นตอนการคัดกรอง (Pruning)
+          </button>
+          <button
+            onClick={() => setActiveTab('rules')}
+            className={`flex-1 py-2.5 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-all ${activeTab === 'rules' ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+          >
+            <ShoppingCart className="w-4 h-4" /> กฎความสัมพันธ์ (Rules)
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[400px]">
+          
+          {/* Data Tab */}
+          {activeTab === 'data' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold">Transaction</th>
+                    {ITEMS.map(item => (
+                      <th key={item} className="px-6 py-4 font-semibold text-center">{item}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {matrix.map((row, idx) => (
+                    <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50/50">
+                      <td className="px-6 py-3 font-medium text-slate-700">T{idx + 1}</td>
+                      {row.map((val, i) => (
+                        <td key={i} className="px-6 py-3 text-center">
+                          {val === 1 
+                            ? <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs">1</span> 
+                            : <span className="text-slate-300">0</span>
+                          }
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Steps Tab */}
+          {activeTab === 'steps' && (
+            <div>
+              {analysisSteps.length === 0 ? (
+                <div className="text-center py-20 text-slate-400">
+                  <ListChecks className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p>กดปุ่ม "เริ่มวิเคราะห์" เพื่อดูขั้นตอนการทำงาน</p>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {analysisSteps.map((step) => (
+                    <div key={step.k} className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                        <h4 className="font-bold text-slate-700">รอบที่ {step.k}: ตรวจสอบกลุ่มสินค้า {step.k} ชิ้น ({step.k}-Itemsets)</h4>
+                      </div>
+                      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Passed */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3 text-emerald-600 font-medium text-sm">
+                            <CheckCircle2 className="w-4 h-4" /> ผ่านเกณฑ์ (Support &gt;= {minSup})
+                          </div>
+                          <div className="space-y-2">
+                            {step.passed.length > 0 ? step.passed.map((p, i) => (
+                              <div key={i} className="flex justify-between items-center bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg text-sm">
+                                <span className="font-medium text-emerald-800">{"{" + p.itemset.join(', ') + "}"}</span>
+                                <span className="bg-white px-2 py-1 rounded text-emerald-600 font-bold text-xs shadow-sm">
+                                  Sup: {p.support.toFixed(2)}
+                                </span>
+                              </div>
+                            )) : <p className="text-xs text-slate-400 italic">ไม่มีกลุ่มสินค้าผ่านเกณฑ์</p>}
+                          </div>
+                        </div>
+                        {/* Failed */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3 text-rose-500 font-medium text-sm">
+                            <XCircle className="w-4 h-4" /> ถูกคัดออก (Support &lt; {minSup})
+                          </div>
+                          <div className="space-y-2">
+                            {step.failed.length > 0 ? step.failed.map((f, i) => (
+                              <div key={i} className="flex justify-between items-center bg-rose-50 border border-rose-100 px-3 py-2 rounded-lg text-sm">
+                                <span className="text-rose-700">{"{" + f.itemset.join(', ') + "}"}</span>
+                                <span className="bg-white px-2 py-1 rounded text-rose-500 font-medium text-xs opacity-80">
+                                  Sup: {f.support.toFixed(2)}
+                                </span>
+                              </div>
+                            )) : <p className="text-xs text-slate-400 italic">ไม่มีกลุ่มสินค้าถูกคัดออก</p>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Rules Tab */}
+          {activeTab === 'rules' && (
+            <div>
+              {analysisSteps.length === 0 ? (
+                <div className="text-center py-20 text-slate-400">
+                  <Network className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p>กดปุ่ม "เริ่มวิเคราะห์" เพื่อสร้างกฎความสัมพันธ์</p>
+                </div>
+              ) : associationRules.length === 0 ? (
+                <div className="text-center py-20 bg-amber-50 rounded-xl border border-amber-100 text-amber-600">
+                  <p className="font-medium">ไม่พบกฎที่ผ่านเกณฑ์</p>
+                  <p className="text-sm mt-1 opacity-80">ลองปรับลดค่า minsup หรือ minconf ลงเพื่อค้นหาความสัมพันธ์ที่ซ่อนอยู่</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {associationRules.map((rule, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                      
+                      {/* Highlight Lift Indicator */}
+                      <div className={`absolute top-0 left-0 w-1.5 h-full ${rule.lift > 1.2 ? 'bg-emerald-500' : rule.lift >= 1 ? 'bg-amber-400' : 'bg-rose-400'}`}></div>
+                      
+                      <div className="flex items-center justify-between mb-4 pl-3">
+                        <div className="flex items-center gap-3">
+                          <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-semibold rounded-lg text-sm border border-indigo-100">
+                            {rule.antecedent.join(', ')}
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-slate-400" />
+                          <span className="px-3 py-1.5 bg-teal-50 text-teal-700 font-semibold rounded-lg text-sm border border-teal-100">
+                            {rule.consequent.join(', ')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 pl-3">
+                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
+                          <p className="text-[10px] uppercase text-slate-400 font-semibold">Support</p>
+                          <p className="text-lg font-bold text-slate-700">{rule.support.toFixed(2)}</p>
+                        </div>
+                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
+                          <p className="text-[10px] uppercase text-slate-400 font-semibold">Confidence</p>
+                          <p className="text-lg font-bold text-teal-600">{rule.confidence.toFixed(2)}</p>
+                        </div>
+                        <div className={`rounded-lg p-2 text-center border ${rule.lift > 1 ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                          <p className="text-[10px] uppercase text-slate-400 font-semibold">Lift</p>
+                          <p className={`text-lg font-bold ${rule.lift > 1 ? 'text-emerald-600' : 'text-slate-600'}`}>{rule.lift.toFixed(2)}</p>
+                        </div>
+                      </div>
+
+                      <div className="pl-3 mt-3 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                        <span className="font-semibold">ความหมาย: </span>
+                        ถ้าลูกค้าซื้อ <span className="text-indigo-600">[{rule.antecedent.join(', ')}]</span> 
+                        จะมีโอกาสซื้อ <span className="text-teal-600">[{rule.consequent.join(', ')}]</span> ถึง <span className="font-bold">{(rule.confidence * 100).toFixed(0)}%</span> 
+                        {rule.lift > 1 && <span> (ช่วยกระตุ้นยอดขายได้ {rule.lift.toFixed(1)} เท่า)</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-
-    <div class="controls">
-        <div id="status-text">เริ่มเกม! แตะแก้วเพื่อรินน้ำ</div>
-        <button class="btn btn-reset" onclick="resetGame()">เริ่มใหม่ (Reset)</button>
-    </div>
-
-    <div class="secret-area">
-        <input type="text" id="secret-input" class="input-code" placeholder="ใส่รหัสลับที่นี่">
-        <button class="btn btn-code" onclick="checkSecret()">เปลี่ยนด่าน</button>
-    </div>
-
-    <div id="win-overlay">
-        <h2>🎉 ภารกิจสำเร็จ! 🎉</h2>
-        <p id="win-msg">คุณทำได้ยอดเยี่ยมมาก</p>
-        <br>
-        <button class="btn" onclick="resetGame()" style="background-color: #27ae60;">เล่นอีกครั้ง</button>
-    </div>
-
-    <script>
-        // --- Game Configurations ---
-        const LEVELS = {
-            1: {
-                caps: [8, 5, 3],
-                start: [8, 0, 0], // เริ่มต้นแก้วแรกเต็ม
-                target: [4, 4, 0],
-                desc: "ด่าน 1: เป้าหมาย แบ่งน้ำ 4 ลิตร สองกอง",
-                heights: [200, 140, 100] // ความสูง Visual ของแก้ว
-            },
-            2: {
-                caps: [19, 13, 7],
-                start: [0, 13, 7], // เริ่มต้นแก้วกลางและเล็กเต็ม
-                target: [10, 10, 0],
-                desc: "ด่าน 2: เป้าหมาย แบ่งน้ำ 10 ลิตร สองกอง",
-                heights: [220, 170, 100]
-            }
-        };
-
-        // --- State ---
-        let currentLevelId = 1; // เริ่มต้นด่าน 1
-        let currentConfig = LEVELS[1];
-        let currentWater = [];
-        let selectedIndex = null;
-
-        // --- Initialization ---
-        function initGame() {
-            // โหลดค่า Config ตามด่านปัจจุบัน
-            currentConfig = LEVELS[currentLevelId];
-            currentWater = [...currentConfig.start];
-            selectedIndex = null;
-
-            // อัปเดต UI (ข้อความ Max Cap และความสูงแก้ว)
-            document.getElementById('mission-text').innerText = currentConfig.desc;
-            
-            for(let i=0; i<3; i++) {
-                document.getElementById(`max-${i}`).innerText = currentConfig.caps[i];
-                // ปรับความสูงแก้วให้ดูสมจริงตามด่าน
-                document.getElementById(`jug-vis-${i}`).style.height = `${currentConfig.heights[i]}px`;
-                highlightJug(i, false);
-            }
-
-            document.getElementById('status-text').innerText = "พร้อมแล้ว! แตะแก้วเพื่อเริ่ม";
-            document.getElementById('win-overlay').style.display = 'none';
-            
-            updateDisplay();
-        }
-
-        // --- Core Logic ---
-        function clickJug(index) {
-            const statusEl = document.getElementById('status-text');
-
-            if (selectedIndex === null) {
-                // เลือกแก้วต้นทาง
-                if (currentWater[index] > 0) {
-                    selectedIndex = index;
-                    highlightJug(index, true);
-                    statusEl.innerText = `กำลังเลือกแก้ว ${currentConfig.caps[index]} ลิตร`;
-                    statusEl.style.color = "#ff9f43";
-                } else {
-                    statusEl.innerText = "แก้วนี้ไม่มีน้ำ!";
-                    statusEl.style.color = "#e74c3c";
-                    shakeJug(index);
-                }
-            } else {
-                // เลือกแก้วปลายทาง
-                if (selectedIndex === index) {
-                    // ยกเลิก
-                    highlightJug(selectedIndex, false);
-                    selectedIndex = null;
-                    statusEl.innerText = "ยกเลิก";
-                    statusEl.style.color = "#95a5a6";
-                } else {
-                    // เทน้ำ
-                    pourWater(selectedIndex, index);
-                    highlightJug(selectedIndex, false);
-                    selectedIndex = null;
-                }
-            }
-        }
-
-        function pourWater(fromIdx, toIdx) {
-            const statusEl = document.getElementById('status-text');
-            const maxCap = currentConfig.caps;
-            
-            const spaceAvailable = maxCap[toIdx] - currentWater[toIdx];
-            
-            if (spaceAvailable === 0) {
-                statusEl.innerText = "เต็มแล้ว! เทไม่ได้";
-                statusEl.style.color = "#e74c3c";
-                return;
-            }
-
-            const amountToPour = Math.min(currentWater[fromIdx], spaceAvailable);
-            currentWater[fromIdx] -= amountToPour;
-            currentWater[toIdx] += amountToPour;
-
-            updateDisplay();
-            statusEl.innerText = `เทน้ำเรียบร้อย`;
-            statusEl.style.color = "#27ae60";
-
-            setTimeout(checkWin, 200);
-        }
-
-        function updateDisplay() {
-            for (let i = 0; i < 3; i++) {
-                const percent = (currentWater[i] / currentConfig.caps[i]) * 100;
-                document.getElementById(`water-${i}`).style.height = `${percent}%`;
-                document.getElementById(`val-${i}`).innerText = currentWater[i];
-            }
-        }
-
-        function checkWin() {
-            // เช็คเงื่อนไขชนะตามด่าน (เฉพาะแก้ว 1 และ 2 เท่านั้นที่สนใจตามโจทย์)
-            const target = currentConfig.target;
-            if (currentWater[0] === target[0] && currentWater[1] === target[1]) {
-                document.getElementById('win-msg').innerText = 
-                    (currentLevelId === 1) ? "ได้น้ำ 4 ลิตรเท่ากันแล้ว!" : "ได้น้ำ 10 ลิตรเท่ากันแล้ว!";
-                document.getElementById('win-overlay').style.display = 'flex';
-            }
-        }
-
-        // --- Utilities ---
-        function highlightJug(index, isActive) {
-            const el = document.getElementById(`jug-${index}`);
-            isActive ? el.classList.add('selected') : el.classList.remove('selected');
-        }
-
-        function resetGame() {
-            initGame();
-        }
-
-        function shakeJug(index) {
-            const el = document.getElementById(`jug-${index}`);
-            el.style.transform = "translateX(5px)";
-            setTimeout(() => el.style.transform = "translateX(-5px)", 50);
-            setTimeout(() => el.style.transform = "translateX(5px)", 100);
-            setTimeout(() => el.style.transform = "translateX(0)", 150);
-        }
-
-        // --- Secret Code Logic ---
-        function checkSecret() {
-            const input = document.getElementById('secret-input');
-            const val = input.value.trim();
-
-            if (val === 'mathnu2') {
-                // สลับด่าน 1 <-> 2
-                currentLevelId = (currentLevelId === 1) ? 2 : 1;
-                
-                // แจ้งเตือนและรีเซ็ต
-                alert(`รหัสถูกต้อง! กำลังเข้าสู่ด่าน ${currentLevelId}`);
-                initGame();
-                input.value = ""; // เคลียร์ช่อง
-            } else {
-                alert("รหัสไม่ถูกต้อง!");
-                input.classList.add('shake'); // (Optional effect if CSS added)
-            }
-        }
-
-        // เริ่มเกมครั้งแรก
-        initGame();
-
-    </script>
-</body>
-</html>
+  );
+}
