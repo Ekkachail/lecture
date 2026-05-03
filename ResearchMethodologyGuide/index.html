@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คู่มือสืบค้นวารสารและทบทวนวรรณกรรมด้วย NotebookLM</title>
+    <!-- นำเข้า Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- นำเข้า Google Fonts: Prompt (หัวข้อโค้งมนเป็นมิตร) และ Kanit (เนื้อหาอ่านง่ายทันสมัย) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Kanit', 'sans-serif'], // ใช้ Kanit เป็นฟอนต์หลัก
+                        heading: ['Prompt', 'sans-serif'], // ใช้ Prompt สำหรับหัวข้อ
+                        serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'], // คงไว้สำหรับตัวแปรคณิตศาสตร์
+                    },
+                    colors: {
+                        academic: {
+                            50: '#f0f4f8',
+                            100: '#d9e2ec',
+                            500: '#334e68',
+                            800: '#102a43',
+                            900: '#0a192f', // สีกรมท่าลึกแบบวิชาการ
+                        },
+                        math: {
+                            gold: '#c5a365', // สีทองคลาสสิก
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ลายพื้นหลังตารางกราฟอ่อนๆ สื่อถึงความเป็นคณิตศาสตร์/วิทยาศาสตร์ */
+        body {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        /* ซ่อนเนื้อหาสำหรับ Accordion */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-active .accordion-content {
+            max-height: 1000px; /* ปรับให้พอดีกับเนื้อหา */
+            transition: max-height 0.5s ease-in;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        /* ตกแต่งกล่องแบบทฤษฎีบท (Theorem Box) */
+        .theorem-box {
+            border-left: 4px solid #c5a365;
+            background-color: #fffaf0;
+            position: relative;
+        }
+        .theorem-box::before {
+            content: "ข้อสังเกต / ข้อควรระวัง";
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background: #fffaf0;
+            padding: 0 8px;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 600;
+            color: #b08d55;
+            font-size: 0.9rem;
+        }
+
+        /* เพิ่มเติม: Animation ค่อยๆ ปรากฏเมื่อเลื่อนจอ (Scroll Fade-in) */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="text-slate-700 leading-relaxed antialiased">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-br from-academic-900 via-academic-800 to-academic-500 text-white py-16 px-4 shadow-lg border-b-4 border-math-gold relative overflow-hidden">
+        <!-- ลวดลายประดับ Background Header -->
+        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h1 class="font-heading text-3xl md:text-5xl font-bold mb-4 leading-tight drop-shadow-md">
+                คู่มือการสืบค้นและทบทวนวรรณกรรม
+            </h1>
+            <p class="text-academic-100 text-lg md:text-xl max-w-2xl mx-auto font-light">
+                ระเบียบวิธีวิจัยเชิงปริมาณ: การประเมินคุณภาพวารสาร (Q) และการประยุกต์ใช้ปัญญาประดิษฐ์ (NotebookLM) ในการสังเคราะห์ข้อมูล
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-12 -mt-8">
+        
+        <!-- บทคัดย่อ / Abstract -->
+        <div class="fade-in-up bg-white rounded-xl shadow-md p-6 md:p-8 mb-10 border-t-4 border-academic-500 relative z-10 transition-all hover:shadow-xl">
+            <h2 class="font-heading text-2xl text-academic-800 font-bold mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-math-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                บทนำ (Introduction)
+            </h2>
+            <p class="text-slate-600 mb-4 indent-8 text-justify leading-loose">
+                การทำวิจัยและทบทวนวรรณกรรมในยุคปัจจุบัน สามารถเพิ่มประสิทธิภาพและความแม่นยำได้ด้วยการผสาน <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 font-medium shadow-sm">กระบวนการสืบค้นฐานข้อมูลที่ได้มาตรฐาน</span> เข้ากับการใช้ปัญญาประดิษฐ์เชิงวิเคราะห์ เช่น NotebookLM คู่มือฉบับนี้ถูกออกแบบมาอย่างเป็นระบบ เพื่อครอบคลุมตั้งแต่กระบวนการสืบค้น <span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium shadow-sm">การประเมินคุณภาพวารสาร (Quartile Ranking)</span> ไปจนถึง <span class="bg-amber-50 text-amber-700 px-2 py-1 rounded border border-amber-200 font-medium shadow-sm">ระเบียบวิธีในการสังเคราะห์วรรณกรรมข้ามเอกสาร</span>
+            </p>
+        </div>
+
+        <!-- Section: เอกสารประกอบการบรรยาย -->
+        <div class="fade-in-up mb-12">
+            <h3 class="font-heading text-xl font-bold text-academic-800 mb-6 border-b-2 border-slate-200 pb-2">
+                เอกสารประกอบการบรรยาย (Slide Handouts)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- แก้ไข href เป็นลิงก์ GitHub ของคุณ -->
+                <a href="เทคนิคการสืบค้น.pdf" target="_blank" class="group flex flex-col items-center p-6 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-academic-500 transition-all duration-300 transform hover:-translate-y-1">
+                    <svg class="w-12 h-12 text-red-500 mb-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span class="font-medium text-academic-800 text-center">เทคนิคการสืบค้น</span>
+                    <span class="text-xs text-slate-400 mt-2">PDF Document</span>
+                </a>
+                
+                <a href="พลิคโฉมการทบทวนวรรณกรรมด้วย AI.pdf" target="_blank" class="group flex flex-col items-center p-6 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-academic-500 transition-all duration-300 transform hover:-translate-y-1">
+                    <svg class="w-12 h-12 text-red-500 mb-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    <span class="font-medium text-academic-800 text-center">พลิกโฉมการทบทวนวรรณกรรม</span>
+                    <span class="text-xs text-slate-400 mt-2">PDF Document</span>
+                </a>
+
+                <a href="notbooklm เพื่องานวิจัย.pdf" target="_blank" class="group flex flex-col items-center p-6 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-academic-500 transition-all duration-300 transform hover:-translate-y-1">
+                    <svg class="w-12 h-12 text-red-500 mb-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L11 13.17l7.59-7.59L20 7l-9 9z"/></svg>
+                    <span class="font-medium text-academic-800 text-center">NotebookLM เพื่องานวิจัย</span>
+                    <span class="text-xs text-slate-400 mt-2">PDF Document</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Section 1: Journal Ranking -->
+        <section class="fade-in-up bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-200 p-6 md:p-8 mb-10">
+            <h2 class="font-heading text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-academic-800 to-academic-500">
+                ส่วนที่ 1: การประเมินคุณภาพวารสารวิชาการ (Quartile Analysis)
+            </h2>
+            
+            <p class="mb-6 text-slate-600 text-justify">
+                ในทางสถิติศาสตร์และบรรณมิติ (Bibliometrics) การจัดกลุ่มวารสารมักใช้ควอร์ไทล์ (Quartile) หรือ <span class="font-serif italic font-bold text-math-gold text-lg">Q</span> เป็นตัวแบ่งตำแหน่งสัมพัทธ์ของวารสารในสาขานั้นๆ จากคะแนนการอ้างอิง (Citation scores) โดยแบ่งเป็น 4 ส่วนเท่าๆ กัน
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-6">
+                <!-- นานาชาติ -->
+                <div class="bg-slate-50 p-6 rounded-lg border border-slate-100 hover:border-academic-500 transition-colors">
+                    <h4 class="font-heading font-bold text-lg text-academic-500 mb-4 flex items-center gap-2">
+                        <span class="bg-academic-800 text-white text-sm w-6 h-6 flex items-center justify-center rounded-full shadow-md">1</span>
+                        ฐานข้อมูลระดับนานาชาติ
+                    </h4>
+                    <ul class="space-y-4 text-sm text-slate-700">
+                        <li class="flex items-start gap-2">
+                            <span class="text-math-gold mt-1">▸</span>
+                            <div>
+                                <strong class="text-academic-800 block">SCImago Journal Rank (SJR)</strong>
+                                <span class="text-slate-500">เว็บไซต์ที่คำนวณค่าจากฐานข้อมูล Scopus ฟรี (scimagojr.com) หากวารสารมีหลายสาขา ให้พิจารณาค่า <span class="font-serif italic font-semibold text-math-gold">Q</span> ที่สูงที่สุด (<span class="font-serif italic font-semibold text-math-gold">Q<sub>best</sub></span>)</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-math-gold mt-1">▸</span>
+                            <div>
+                                <strong class="text-academic-800 block">Scopus (Percentile)</strong>
+                                <span class="text-slate-500">แปลงเปอร์เซ็นไทล์เป็นควอร์ไทล์ตามสมการเชิงตรรกะ: <br>
+                                    <code class="bg-white px-2 py-1 rounded border shadow-sm text-academic-800 font-semibold mt-1 inline-block">Q1: <span class="font-serif italic">p &gt; 75</span></code>, 
+                                    <code class="bg-white px-2 py-1 rounded border shadow-sm text-academic-800 font-semibold mt-1 inline-block">Q2: <span class="font-serif italic">50 &lt; p &le; 75</span></code>
+                                </span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-math-gold mt-1">▸</span>
+                            <div>
+                                <strong class="text-academic-800 block">Web of Science (WOS/JCR)</strong>
+                                <span class="text-slate-500">ใช้ดัชนี Impact Factor (IF) และจัดลำดับ Q ในฐานข้อมูล JCR อย่างเป็นทางการ</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- ระดับชาติ -->
+                <div class="bg-slate-50 p-6 rounded-lg border border-slate-100 hover:border-academic-500 transition-colors">
+                    <h4 class="font-heading font-bold text-lg text-academic-500 mb-4 flex items-center gap-2">
+                        <span class="bg-academic-800 text-white text-sm w-6 h-6 flex items-center justify-center rounded-full shadow-md">2</span>
+                        ฐานข้อมูลระดับชาติ (TCI)
+                    </h4>
+                    <p class="text-sm text-slate-600 mb-4">ศูนย์ดัชนีการอ้างอิงวารสารไทย (TCI) แบ่งเป็น 3 ระดับ (Tiers)</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                            <span class="font-bold text-green-700">Tier 1</span>
+                            <span class="text-slate-500">วารสารคุณภาพดีที่สุด (พิจารณาปรับเข้า ACI/Scopus)</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                            <span class="font-bold text-blue-700">Tier 2</span>
+                            <span class="text-slate-500">วารสารคุณภาพดี</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                            <span class="font-bold text-orange-700">Tier 3</span>
+                            <span class="text-slate-500">วารสารที่ต้องปรับปรุงคุณภาพ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion ขยายความ -->
+            <div class="border border-slate-200 rounded-lg bg-white overflow-hidden" onclick="this.classList.toggle('accordion-active')">
+                <button class="w-full px-6 py-4 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <span class="font-heading font-semibold text-academic-800">➕ ขยายความ: ทำไมการเลือกวารสาร Q1/Q2 จึงสำคัญต่องานวิจัยคณิตศาสตร์/วิทยาศาสตร์?</span>
+                    <svg class="accordion-icon w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-6 text-sm text-slate-600 space-y-3 border-t border-slate-200">
+                        <p>ในแวดวงวิทยาศาสตร์และคณิตศาสตร์ การตีพิมพ์ผลงาน (Publication) เปรียบเสมือนการพิสูจน์ความถูกต้องขององค์ความรู้ผ่านกระบวนการ Peer-Review ที่เข้มข้น</p>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong>ความน่าเชื่อถือของทฤษฎี (Validity):</strong> วารสาร Q1 มักมีผู้ทรงคุณวุฒิที่ตรวจสอบสมการ ข้อพิสูจน์ (Proofs) และระเบียบวิธีวิจัยอย่างละเอียด ลดโอกาสข้อผิดพลาด</li>
+                            <li><strong>โอกาสในการขอทุน (Funding):</strong> แหล่งทุนวิจัยระดับชาติและนานาชาติ มักตั้งเกณฑ์ขั้นต่ำในการตีพิมพ์ผลลัพธ์โครงการไว้ที่วารสารระดับ Q1 หรือ Q2 ของ Scopus/WOS</li>
+                            <li><strong>การถูกนำไปอ้างอิง (Citations):</strong> งานที่ตีพิมพ์ในวารสารระดับสูงจะมี Visibility สูง มีโอกาสที่นักคณิตศาสตร์หรือนักวิจัยท่านอื่นจะนำสมการหรือโมเดลไปต่อยอด</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: NotebookLM -->
+        <section class="fade-in-up bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-200 p-6 md:p-8 mb-10">
+            <h2 class="font-heading text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-academic-800 to-academic-500">
+                ส่วนที่ 2: การสังเคราะห์วรรณกรรมด้วย NotebookLM
+            </h2>
+            <p class="mb-8 text-slate-500 font-light text-sm">ประยุกต์ใช้ AI ด้วยแนวคิด <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded font-semibold border border-yellow-200 shadow-sm">Source-grounding</span> เพื่อป้องกันการเกิด <span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-semibold border border-rose-200 shadow-sm">Hallucination (ข้อมูลหลอน)</span></p>
+
+            <div class="space-y-8">
+                <!-- Step 1-2 -->
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-1 bg-academic-50 p-5 rounded-lg border-l-4 border-academic-500 hover:-translate-y-1 transition-transform shadow-sm">
+                        <h4 class="font-bold text-academic-900 mb-2">1. การสร้างฐานข้อมูล (Evidence Base)</h4>
+                        <p class="text-sm text-slate-600">อัปโหลด PDF งานวิจัย (สูงสุด 50 ไฟล์) ระบบจะทำงานในกรอบข้อมูลแบบ <em class="text-academic-800 font-semibold bg-slate-200 px-1.5 py-0.5 rounded border border-slate-300">Closed-domain</em> ไม่อ้างอิงข้อมูลนอกเหนือจากเอกสารนี้ และสร้าง Source Guide ให้ทันที</p>
+                    </div>
+                    <div class="flex-1 bg-academic-50 p-5 rounded-lg border-l-4 border-academic-500 hover:-translate-y-1 transition-transform shadow-sm">
+                        <h4 class="font-bold text-academic-900 mb-2">2. การสืบค้นเชิงลึก (Deep Research)</h4>
+                        <p class="text-sm text-slate-600">หากข้อมูลไม่พอ ใช้โหมด <span class="font-semibold text-academic-800 bg-academic-100 px-1.5 py-0.5 rounded">Deep Research</span> ให้ AI ออกไปค้นหาบนเว็บ สังเคราะห์เป็นรายงานพร้อมอ้างอิง และดึงเข้ามาเป็น Source ใหม่ได้</p>
+                    </div>
+                </div>
+
+                <!-- Step 3: Prompts -->
+                <div>
+                    <h4 class="font-heading font-bold text-lg text-academic-800 mb-4">3. วิศวกรรมคำสั่ง (Prompt Engineering) สำหรับงานวิจัย</h4>
+                    <div class="bg-slate-900 text-slate-300 p-5 rounded-lg font-mono text-sm shadow-inner space-y-4">
+                        <div>
+                            <span class="text-math-gold"># การหาสรุปรวมข้ามเอกสาร</span>
+                            <p class="text-white mt-1">"ช่วยตารางสรุปประเด็นหลัก ทฤษฎีที่ใช้ ระเบียบวิธี และผลลัพธ์ของสมการจากทุกเอกสาร"</p>
+                        </div>
+                        <div>
+                            <span class="text-math-gold"># การหาความขัดแย้ง (Contradictions)</span>
+                            <p class="text-white mt-1">"วิเคราะห์จุดที่มีความเห็นขัดแย้งกันระหว่างเอกสารเกี่ยวกับการประยุกต์ใช้โมเดล [ชื่อโมเดล]"</p>
+                        </div>
+                        <div>
+                            <span class="text-math-gold"># เทคนิค Source Gap (หาช่องโหว่)</span>
+                            <p class="text-white mt-1">"จากการทบทวนวรรณกรรมทั้งหมดนี้ มี Research gaps หรือตัวแปรใดในสมการที่ยังไม่ถูกนำมาทดสอบบ้าง?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4-5 -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="p-5 border border-slate-200 rounded-lg">
+                        <h4 class="font-bold text-academic-800 mb-2 flex items-center gap-2">
+                            <span class="text-xl">🎙️</span> 4. Audio Overview
+                        </h4>
+                        <p class="text-sm text-slate-600">สร้าง Podcast จำลองการสนทนาของ AI 2 ตัว เพื่อวิเคราะห์ความเชื่อมโยงของเปเปอร์ต่างๆ ช่วยในการทบทวนระหว่างเดินทาง (รองรับภาษาไทย)</p>
+                    </div>
+                    
+                    <div class="p-5 border border-slate-200 rounded-lg theorem-box mt-4 md:mt-0">
+                        <h4 class="font-bold text-academic-800 mb-2">การอ่านสมการทางคณิตศาสตร์</h4>
+                        <p class="text-sm text-slate-600">AI ยังมีข้อจำกัดในการตีความสัญลักษณ์ทางคณิตศาสตร์ซับซ้อน (LaTeX/MathType) <strong>ผู้ศึกษาต้องเทียบเคียงสมการกับเอกสารต้นฉบับ (PDF) เสมอ</strong></p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Key Takeaways -->
+        <section class="fade-in-up bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+            <h3 class="font-heading text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                ข้อสรุปเชิงวิจารณญาณ (Key Takeaways)
+            </h3>
+            <ul class="space-y-4 text-amber-900">
+                <li class="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-amber-100">
+                    <div class="bg-amber-200 p-1.5 rounded-full mt-0.5 shadow-sm"><svg class="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div>
+                    <span class="text-sm md:text-base"><strong class="text-amber-800">ตรวจสอบการอ้างอิงเสมอ:</strong> ต้องคลิกที่ <span class="bg-amber-200 px-1.5 py-0.5 rounded font-mono text-sm border border-amber-300">เลขการอ้างอิง (Citations)</span> เพื่อตรวจสอบบริบทจากเปเปอร์ต้นฉบับ ป้องกันการตีความผิดพลาดของ AI</span>
+                </li>
+                <li class="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-amber-100">
+                    <div class="bg-amber-200 p-1.5 rounded-full mt-0.5 shadow-sm"><svg class="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div>
+                    <span class="text-sm md:text-base"><strong class="text-amber-800">มนุษย์คือผู้ตัดสินใจ:</strong> AI เป็นเพียงเครื่องมือประมวลผล การวิพากษ์วรรณกรรมและการคัดเลือกความน่าเชื่อถือของเปเปอร์ยังเป็นความรับผิดชอบของผู้วิจัย</span>
+                </li>
+                <li class="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-amber-100">
+                    <div class="bg-amber-200 p-1.5 rounded-full mt-0.5 shadow-sm"><svg class="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div>
+                    <span class="text-sm md:text-base"><strong class="text-amber-800">คุณภาพของคำถามกำหนดคุณภาพคำตอบ:</strong> การออกแบบ <span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">Prompt</span> ที่มีความเฉพาะเจาะจงเชิงระเบียบวิธีวิจัย จะให้ผลลัพธ์ที่นำไปใช้งานได้จริงมากกว่าคำถามกว้างๆ</span>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-academic-900 text-slate-400 py-8 text-center text-sm border-t border-academic-800 mt-12 relative z-10">
+        <p>&copy; 2026 คู่มือการทำวิจัยและทบทวนวรรณกรรมด้วย AI</p>
+        <p class="mt-1">จัดทำเพื่อใช้ประกอบการศึกษาและการวิจัยเชิงวิชาการ</p>
+    </footer>
+
+    <!-- เพิ่ม Script สำหรับ Animation Scroll -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // เล่นแค่ครั้งเดียวเมื่อเลื่อนผ่าน
+                    }
+                });
+            }, observerOptions);
+
+            // ค้นหาทุก Element ที่มี class fade-in-up เพื่อทำการดักจับ
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
