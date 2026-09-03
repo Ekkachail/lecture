@@ -1,0 +1,1528 @@
+<meta charset="utf-8">
+<title>จานหมุนและเปลือกทรงกระบอก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light dark;
+  --paper:#EAE8E1;
+  --card:#F8F7F2;
+  --sunk:#E0DDD3;
+  --ink:#17171F;
+  --ink-2:#54525E;
+  --ink-3:#8A8794;
+  --rule:#D3D0C6;
+  --rule-2:#BBB7AB;
+  --ink-a:#2530C0;
+  --ink-b:#DC4318;
+  --ink-c:#0A8A60;
+  --ink-a-soft:rgba(37,48,192,.14);
+  --ink-b-soft:rgba(220,67,24,.14);
+  --region:rgba(94,40,140,.16);
+  --region-line:#5E288C;
+  --strip:rgba(37,48,192,.13);
+  --strip-line:rgba(37,48,192,.55);
+  --grid:rgba(23,23,31,.07);
+  --grid-2:rgba(23,23,31,.14);
+  --canvas-bg:#F8F7F2;
+  --shadow:0 1px 2px rgba(23,23,31,.06);
+  --font-d:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --font-b:"IBM Plex Sans Thai","Bai Jamjuree",system-ui,sans-serif;
+  --font-m:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121218;
+    --card:#1A1A21;
+    --sunk:#0D0D12;
+    --ink:#ECEAE3;
+    --ink-2:#A5A2AE;
+    --ink-3:#76737F;
+    --rule:#2C2C36;
+    --rule-2:#3D3D49;
+    --ink-a:#8390FF;
+    --ink-b:#FF7A4D;
+    --ink-c:#33D69B;
+    --ink-a-soft:rgba(131,144,255,.16);
+    --ink-b-soft:rgba(255,122,77,.16);
+    --region:rgba(178,140,255,.16);
+    --region-line:#B28CFF;
+    --strip:rgba(131,144,255,.14);
+    --strip-line:rgba(131,144,255,.6);
+    --grid:rgba(236,234,227,.07);
+    --grid-2:rgba(236,234,227,.15);
+    --canvas-bg:#16161C;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121218; --card:#1A1A21; --sunk:#0D0D12;
+  --ink:#ECEAE3; --ink-2:#A5A2AE; --ink-3:#76737F;
+  --rule:#2C2C36; --rule-2:#3D3D49;
+  --ink-a:#8390FF; --ink-b:#FF7A4D; --ink-c:#33D69B;
+  --ink-a-soft:rgba(131,144,255,.16); --ink-b-soft:rgba(255,122,77,.16);
+  --region:rgba(178,140,255,.16); --region-line:#B28CFF;
+  --strip:rgba(131,144,255,.14); --strip-line:rgba(131,144,255,.6);
+  --grid:rgba(236,234,227,.07); --grid-2:rgba(236,234,227,.15);
+  --canvas-bg:#16161C; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-b);
+  font-size:15px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.sheet{max-width:1160px;margin:0 auto;padding:28px 20px 72px}
+
+/* ---------- masthead ---------- */
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:22px}
+.eyebrow{
+  font-family:var(--font-m);font-size:11.5px;font-weight:500;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--ink-b);display:inline-block}
+h1{
+  font-family:var(--font-d);font-weight:700;
+  font-size:clamp(1.7rem,4.2vw,2.5rem);
+  line-height:1.18;letter-spacing:-.01em;
+  margin:.32em 0 .3em;text-wrap:balance;
+}
+h1 em{font-style:normal;color:var(--ink-b)}
+.lede{max-width:62ch;color:var(--ink-2);margin:0;font-size:.98rem}
+
+/* ---------- generic panel ---------- */
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px}
+.panel-hd{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:11px 16px;border-bottom:1px solid var(--rule);
+}
+.panel-hd h2{
+  font-family:var(--font-d);font-size:.95rem;font-weight:600;margin:0;letter-spacing:.01em;
+}
+.panel-hd .hint{font-family:var(--font-m);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+.panel-bd{padding:16px}
+
+/* ---------- step marker ---------- */
+.step{display:flex;align-items:center;gap:10px;margin:26px 0 10px}
+.step .num{
+  font-family:var(--font-m);font-size:11px;font-weight:600;letter-spacing:.1em;
+  color:var(--paper);background:var(--ink);border-radius:2px;padding:2px 7px;
+}
+.step h2{font-family:var(--font-d);font-size:1.06rem;font-weight:600;margin:0}
+.step .sub{color:var(--ink-3);font-size:.85rem;margin-left:auto;font-family:var(--font-m)}
+
+/* ---------- method tabs ---------- */
+.tabs{display:flex;gap:0;border:1px solid var(--rule-2);border-radius:3px;overflow:hidden;background:var(--sunk)}
+.tabs button{
+  flex:1;appearance:none;border:0;background:transparent;cursor:pointer;
+  font-family:var(--font-d);font-size:.92rem;font-weight:600;color:var(--ink-2);
+  padding:11px 12px;line-height:1.3;transition:background .12s,color .12s;
+  border-right:1px solid var(--rule-2);
+}
+.tabs button:last-child{border-right:0}
+.tabs button small{display:block;font-family:var(--font-m);font-size:10.5px;font-weight:400;letter-spacing:.05em;color:var(--ink-3);margin-top:1px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button[aria-selected="true"] small{color:rgba(255,255,255,.6)}
+:root[data-theme="dark"] .tabs button[aria-selected="true"] small{color:rgba(0,0,0,.55)}
+
+/* ---------- form bits ---------- */
+.fieldgrid{display:grid;gap:14px;margin-top:16px}
+.f-row{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.f-tag{
+  font-family:var(--font-m);font-size:13px;font-weight:600;
+  width:58px;text-align:right;white-space:nowrap;color:var(--ink-2);
+}
+.f-tag.a{color:var(--ink-a)}
+.f-tag.b{color:var(--ink-b)}
+input[type="text"]{
+  width:100%;font-family:var(--font-m);font-size:14.5px;
+  background:var(--sunk);color:var(--ink);
+  border:1px solid var(--rule-2);border-radius:2px;
+  padding:9px 11px;
+}
+input[type="text"]:focus{outline:2px solid var(--ink-a);outline-offset:1px;border-color:transparent}
+.swatch{width:12px;height:12px;border-radius:2px;flex:none}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.mini label{display:block}
+.mini .lab{
+  font-family:var(--font-m);font-size:11px;letter-spacing:.06em;
+  color:var(--ink-3);display:block;margin-bottom:4px;
+}
+.btn{
+  appearance:none;cursor:pointer;font-family:var(--font-b);font-size:13.5px;font-weight:600;
+  background:var(--card);color:var(--ink);border:1px solid var(--rule-2);border-radius:2px;
+  padding:8px 13px;transition:background .12s,border-color .12s;
+}
+.btn:hover{background:var(--sunk);border-color:var(--ink-3)}
+.btn:focus-visible{outline:2px solid var(--ink-a);outline-offset:2px}
+.btn.solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.solid:hover{background:var(--ink-2);border-color:var(--ink-2)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px}
+
+/* ---------- math keypad ---------- */
+.keypad{margin-top:16px;border-top:1px dashed var(--rule-2);padding-top:14px}
+.kp-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
+  font-family:var(--font-m);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  margin-bottom:9px;
+}
+.kp-head b{font-weight:600;color:var(--ink-2);text-transform:none;letter-spacing:.02em;font-family:var(--font-b);font-size:12.5px}
+.kp-groups{display:flex;flex-wrap:wrap;gap:14px}
+.kp-g{display:flex;flex-direction:column;gap:5px}
+.kp-g .gl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.kp-keys{display:flex;flex-wrap:wrap;gap:4px}
+.k{
+  appearance:none;cursor:pointer;border:1px solid var(--rule-2);background:var(--card);
+  color:var(--ink);border-radius:2px;min-width:34px;height:32px;padding:0 8px;
+  font-family:var(--font-m);font-size:13.5px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background .1s,transform .06s;
+}
+.k:hover{background:var(--ink-a-soft);border-color:var(--ink-a)}
+.k:active{transform:translateY(1px)}
+.k:focus-visible{outline:2px solid var(--ink-a);outline-offset:1px}
+.k.wide{min-width:44px}
+.k.op{font-size:15px}
+
+/* ---------- pretty math ---------- */
+.mathview{
+  margin-top:14px;background:var(--sunk);border:1px solid var(--rule);border-radius:2px;
+  padding:12px 14px;display:grid;gap:9px;
+}
+.mline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:26px}
+.mline .who{font-family:var(--font-m);font-size:12px;color:var(--ink-3);width:54px;white-space:nowrap;flex:none}
+.mth{font-family:"IBM Plex Mono",var(--font-m);font-size:15.5px;line-height:1.15}
+.mth .fn{font-family:var(--font-b);font-weight:500;padding-right:1px}
+.mth i{font-style:italic;font-family:Georgia,"Times New Roman",serif}
+.mth sup{font-size:.72em;vertical-align:.5em;line-height:0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .18em;position:relative;top:-.05em}
+.frac .nu{border-bottom:1.2px solid currentColor;padding:0 .3em}
+.frac .de{padding:0 .3em}
+.rad{display:inline-flex;align-items:stretch}
+.rad .sg{font-size:1.05em;line-height:1}
+.rad .bd{border-top:1.2px solid currentColor;padding:0 .18em;margin-top:.12em}
+.err{color:var(--ink-b);font-size:12.5px;font-family:var(--font-b)}
+
+/* ---------- stage 2d ---------- */
+.stage2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr);gap:0}
+.stage2 .plotwrap{position:relative;border-right:1px solid var(--rule);min-width:0}
+.stage2 canvas{display:block;width:100%;height:440px;background:var(--canvas-bg);border-radius:0}
+.legend{
+  position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:4px;
+  background:color-mix(in srgb,var(--card) 88%,transparent);
+  border:1px solid var(--rule);border-radius:2px;padding:7px 9px;
+  font-family:var(--font-m);font-size:11px;color:var(--ink-2);pointer-events:none;
+}
+.legend div{display:flex;align-items:center;gap:6px}
+.legend .ln{width:16px;height:0;border-top:2.5px solid;flex:none}
+.probe{
+  position:absolute;right:12px;bottom:12px;
+  background:color-mix(in srgb,var(--card) 90%,transparent);
+  border:1px solid var(--rule);border-radius:2px;padding:6px 9px;
+  font-family:var(--font-m);font-size:11.5px;color:var(--ink-2);
+  min-width:150px;pointer-events:none;
+}
+.probe b{color:var(--ink);font-weight:600}
+.readout{padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.ro-block{display:flex;flex-direction:column;gap:5px}
+.ro-lab{font-family:var(--font-m);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.ro-formula{
+  font-family:var(--font-m);font-size:14px;line-height:1.5;color:var(--ink);
+  overflow-x:auto;padding-bottom:2px;
+}
+.ro-val{font-family:var(--font-m);font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ro-val.v{color:var(--ink-c)}
+.ro-sub{font-family:var(--font-m);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ro-rule{height:1px;background:var(--rule)}
+.note{
+  font-size:12.5px;color:var(--ink-2);background:var(--ink-b-soft);
+  border-left:2px solid var(--ink-b);padding:8px 10px;border-radius:0 2px 2px 0;
+}
+
+/* ---------- stage 3d ---------- */
+.stage3 .panel-bd{padding:0}
+.viewwrap{position:relative;background:var(--canvas-bg);border-bottom:1px solid var(--rule)}
+#view3d{display:block;width:100%;height:520px;touch-action:none;cursor:grab}
+#view3d:active{cursor:grabbing}
+.v3-tag{
+  position:absolute;left:12px;top:12px;font-family:var(--font-m);font-size:11px;
+  color:var(--ink-3);letter-spacing:.05em;pointer-events:none;
+}
+.v3-tag b{display:block;color:var(--ink);font-size:12.5px;letter-spacing:0;font-weight:600}
+.ctrl3{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;align-items:start}
+.sl{display:flex;flex-direction:column;gap:5px}
+.sl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sl .top span{font-family:var(--font-m);font-size:11px;letter-spacing:.05em;color:var(--ink-3)}
+.sl .top b{font-family:var(--font-m);font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink)}
+input[type="range"]{
+  -webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track{height:3px;background:var(--rule-2);border-radius:2px}
+input[type="range"]::-moz-range-track{height:3px;background:var(--rule-2);border-radius:2px}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--ink);border:0;margin-top:-6px;
+}
+input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--ink);border:0}
+input[type="range"]:focus-visible{outline:2px solid var(--ink-a);outline-offset:2px}
+.toggles{display:flex;flex-direction:column;gap:7px}
+.tg{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;color:var(--ink-2)}
+.tg input{accent-color:var(--ink-a);width:15px;height:15px;cursor:pointer}
+.tg:hover{color:var(--ink)}
+
+/* ---------- notes ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:15px 16px}
+.card h3{font-family:var(--font-d);font-size:.95rem;font-weight:600;margin:0 0 4px}
+.card .tagline{font-family:var(--font-m);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px}
+.card p{margin:0 0 9px;font-size:13.5px;color:var(--ink-2)}
+.card .eq{
+  font-family:var(--font-m);font-size:14px;background:var(--sunk);border:1px solid var(--rule);
+  padding:9px 11px;border-radius:2px;overflow-x:auto;color:var(--ink);
+}
+.card ul{margin:9px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.card li{margin-bottom:3px}
+.card.a{border-top:3px solid var(--ink-a)}
+.card.b{border-top:3px solid var(--ink-b)}
+.card.c{border-top:3px solid var(--ink-c)}
+footer{
+  margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
+  font-family:var(--font-m);font-size:11px;color:var(--ink-3);
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.intg{display:inline-flex;align-items:center;gap:1px;vertical-align:middle}
+.intg .s{font-size:1.7em;line-height:.7;font-family:Georgia,serif}
+.intg .lim{display:inline-flex;flex-direction:column;font-size:.62em;line-height:1.15;text-align:left}
+@media (max-width:880px){
+  .stage2{grid-template-columns:1fr}
+  .stage2 .plotwrap{border-right:0;border-bottom:1px solid var(--rule)}
+  .stage2 canvas{height:360px}
+  #view3d{height:420px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="eyebrow"><span class="dot"></span> แคลคูลัส · การประยุกต์ของปริพันธ์จำกัดเขต</div>
+    <h1>ปริมาตรของทรงตันที่เกิดจากการหมุน<br><em>จานหมุน</em> และ <em>เปลือกทรงกระบอก</em></h1>
+    <p class="lede">พิมพ์ฟังก์ชันสองเส้น กำหนดขอบเขตบนระนาบ <span class="mth"><i>xy</i></span> แล้วเลือกแกนหมุน — แผงบนแสดงพื้นที่ปิดล้อมพร้อมแถบตัดขวาง แผงล่างหมุนพื้นที่นั้นให้กลายเป็นทรงตันจริง ปรับจำนวนจานหรือเปลือกเพื่อดูการซ้อนกัน และเทียบผลบวกรีมันน์กับค่าจากปริพันธ์</p>
+  </header>
+
+  <div class="step"><span class="num">01</span><h2>ตั้งโจทย์</h2><span class="sub">ฟังก์ชัน · ขอบเขต · แกนหมุน</span></div>
+
+  <section class="panel">
+    <div class="panel-hd">
+      <h2>วิธีที่ใช้</h2>
+      <span class="hint">จานตั้งฉากกับแกนหมุน · เปลือกขนานกับแกนหมุน</span>
+    </div>
+    <div class="panel-bd">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" id="tab-disk" aria-selected="true" data-m="disk">วิธีจานหมุน / วงแหวน<small>DISK &amp; WASHER</small></button>
+        <button role="tab" id="tab-shell" aria-selected="false" data-m="shell">วิธีเปลือกทรงกระบอก<small>CYLINDRICAL SHELLS</small></button>
+      </div>
+
+      <div class="fieldgrid">
+        <div class="f-row">
+          <span class="f-tag a">f(x) =</span>
+          <input type="text" id="fIn" value="x" spellcheck="false" autocomplete="off" aria-label="ฟังก์ชัน f ของ x">
+        </div>
+        <div class="f-row">
+          <span class="f-tag b">g(x) =</span>
+          <input type="text" id="gIn" value="x^2" spellcheck="false" autocomplete="off" aria-label="ฟังก์ชัน g ของ x">
+        </div>
+
+        <div class="mini">
+          <label><span class="lab">ขอบซ้าย a</span><input type="text" id="aIn" value="0" spellcheck="false" autocomplete="off"></label>
+          <label><span class="lab">ขอบขวา b</span><input type="text" id="bIn" value="1" spellcheck="false" autocomplete="off"></label>
+          <label><span class="lab">แกนหมุน</span>
+            <select id="axTypeIn" style="width:100%;font-family:var(--font-m);font-size:14px;background:var(--sunk);color:var(--ink);border:1px solid var(--rule-2);border-radius:2px;padding:9px 8px">
+              <option value="h">แนวนอน  y = c</option>
+              <option value="v">แนวตั้ง  x = c</option>
+            </select>
+          </label>
+          <label><span class="lab">ค่า c ของแกน</span><input type="text" id="axValIn" value="0" spellcheck="false" autocomplete="off"></label>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn" id="btnRoots">หาจุดตัดของสองเส้น → ตั้ง a, b</button>
+          <button class="btn" id="btnFit">จัดกรอบภาพใหม่</button>
+          <button class="btn" id="btnEx1">ตัวอย่าง: วงแหวน</button>
+          <button class="btn" id="btnEx2">ตัวอย่าง: เปลือก</button>
+          <button class="btn" id="btnEx3">ตัวอย่าง: โดนัท</button>
+        </div>
+      </div>
+
+      <div class="keypad">
+        <div class="kp-head">
+          <span>แป้นพิมพ์คณิตศาสตร์</span>
+          <b id="kpTarget">กำลังพิมพ์ลงช่อง f(x)</b>
+        </div>
+        <div class="kp-groups">
+          <div class="kp-g"><span class="gl">ตัวแปร / ค่าคงตัว</span><div class="kp-keys">
+            <button class="k" data-ins="x">x</button>
+            <button class="k" data-ins="pi">π</button>
+            <button class="k" data-ins="e">e</button>
+          </div></div>
+          <div class="kp-g"><span class="gl">ตัวดำเนินการ</span><div class="kp-keys">
+            <button class="k op" data-ins="+">+</button>
+            <button class="k op" data-ins="-">−</button>
+            <button class="k op" data-ins="*">×</button>
+            <button class="k op" data-ins="/">÷</button>
+            <button class="k" data-ins="^">x^n</button>
+            <button class="k" data-ins="^2">x²</button>
+            <button class="k" data-ins="^3">x³</button>
+          </div></div>
+          <div class="kp-g"><span class="gl">ราก / ค่าสัมบูรณ์</span><div class="kp-keys">
+            <button class="k" data-ins="sqrt(|)">√( )</button>
+            <button class="k" data-ins="cbrt(|)">∛( )</button>
+            <button class="k wide" data-ins="abs(|)">|x|</button>
+          </div></div>
+          <div class="kp-g"><span class="gl">ตรีโกณมิติ</span><div class="kp-keys">
+            <button class="k wide" data-ins="sin(|)">sin</button>
+            <button class="k wide" data-ins="cos(|)">cos</button>
+            <button class="k wide" data-ins="tan(|)">tan</button>
+            <button class="k wide" data-ins="asin(|)">sin⁻¹</button>
+            <button class="k wide" data-ins="atan(|)">tan⁻¹</button>
+          </div></div>
+          <div class="kp-g"><span class="gl">เอกซ์โพเนนเชียล / ลอการิทึม</span><div class="kp-keys">
+            <button class="k wide" data-ins="exp(|)">eˣ</button>
+            <button class="k wide" data-ins="ln(|)">ln</button>
+            <button class="k wide" data-ins="log(|)">log</button>
+          </div></div>
+          <div class="kp-g"><span class="gl">วงเล็บ / แก้ไข</span><div class="kp-keys">
+            <button class="k" data-ins="(|)">( )</button>
+            <button class="k" data-act="back">⌫</button>
+            <button class="k wide" data-act="clear">ล้าง</button>
+          </div></div>
+        </div>
+
+        <div class="mathview" id="mathview">
+          <div class="mline"><span class="who">f(x) =</span><span class="mth" id="fPretty"></span></div>
+          <div class="mline"><span class="who">g(x) =</span><span class="mth" id="gPretty"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="step"><span class="num">02</span><h2>พื้นที่ปิดล้อมบนระนาบ xy</h2><span class="sub">เลื่อนเมาส์บนกราฟเพื่อดูรัศมี</span></div>
+
+  <section class="panel stage2">
+    <div class="plotwrap">
+      <canvas id="plot2d"></canvas>
+      <div class="legend">
+        <div><span class="ln" style="border-color:var(--ink-a)"></span> f(x)</div>
+        <div><span class="ln" style="border-color:var(--ink-b)"></span> g(x)</div>
+        <div><span class="ln" style="border-color:var(--ink-c);border-top-style:dashed"></span> <span id="legAxis">แกนหมุน y = 0</span></div>
+      </div>
+      <div class="probe" id="probe">เลื่อนเมาส์บนกราฟ</div>
+    </div>
+    <div class="readout">
+      <div class="ro-block">
+        <span class="ro-lab">พื้นที่ปิดล้อม A</span>
+        <span class="ro-val" id="areaVal">—</span>
+        <span class="ro-sub">A = ∫ |f(x) − g(x)| dx</span>
+      </div>
+      <div class="ro-rule"></div>
+      <div class="ro-block">
+        <span class="ro-lab" id="volLab">ปริมาตรจากปริพันธ์</span>
+        <span class="ro-formula" id="volFormula"></span>
+        <span class="ro-val v" id="volVal">—</span>
+      </div>
+      <div class="ro-block">
+        <span class="ro-lab">ผลบวกรีมันน์จาก <b id="nEcho">10</b> ชิ้น</span>
+        <span class="ro-val" id="riemannVal" style="font-size:1.05rem">—</span>
+        <span class="ro-sub" id="riemannErr">—</span>
+      </div>
+      <div class="note" id="warnBox" hidden></div>
+    </div>
+  </section>
+
+  <div class="step"><span class="num">03</span><h2>หมุนพื้นที่ให้เป็นทรงตัน</h2><span class="sub">ลากเพื่อหมุนมุมมอง · สกรอลล์เพื่อซูม</span></div>
+
+  <section class="panel stage3">
+    <div class="panel-hd">
+      <h2 id="s3title">การซ้อนกันของจานหมุน</h2>
+      <span class="hint" id="s3hint">แต่ละจานคือทรงกระบอกบาง ๆ หนา Δx</span>
+    </div>
+    <div class="panel-bd">
+      <div class="viewwrap">
+        <canvas id="view3d"></canvas>
+        <div class="v3-tag"><b id="v3Title">—</b><span id="v3Sub">—</span></div>
+      </div>
+      <div class="ctrl3">
+        <div class="sl">
+          <div class="top"><span id="nLab">จำนวนจาน n</span><b id="nVal">10</b></div>
+          <input type="range" id="nSlider" min="1" max="60" step="1" value="10">
+        </div>
+        <div class="sl">
+          <div class="top"><span>มุมกวาด</span><b id="sweepVal">360°</b></div>
+          <input type="range" id="sweepSlider" min="0" max="360" step="1" value="360">
+        </div>
+        <div class="sl">
+          <div class="top"><span>ความโปร่งใส</span><b id="opVal">85%</b></div>
+          <input type="range" id="opSlider" min="15" max="100" step="1" value="85">
+        </div>
+        <div class="toggles">
+          <label class="tg"><input type="checkbox" id="cbSlices" checked> แสดงจาน / เปลือก</label>
+          <label class="tg"><input type="checkbox" id="cbSolid"> แสดงเป็นทรงตัน</label>
+          <label class="tg"><input type="checkbox" id="cbRegion" checked> แสดงพื้นที่ต้นแบบ</label>
+          <label class="tg"><input type="checkbox" id="cbSpin" checked> หมุนมุมมองอัตโนมัติ</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="step"><span class="num">04</span><h2>สรุปสูตรและวิธีเลือก</h2></div>
+
+  <div class="cards">
+    <div class="card a">
+      <h3>วิธีจานหมุน / วงแหวน</h3>
+      <div class="tagline">DISK &amp; WASHER · ตั้งฉากกับแกน</div>
+      <p>ตัดพื้นที่ด้วยแถบที่ <b>ตั้งฉาก</b> กับแกนหมุน แถบหนา Δ จะกวาดเป็นแผ่นกลมตัน (จาน) หรือแผ่นกลมที่มีรูตรงกลาง (วงแหวน)</p>
+      <div class="eq">V = π ∫ₐᵇ [ R(x)² − r(x)² ] dx</div>
+      <ul>
+        <li>R = ระยะจากแกนถึงขอบที่ <b>ไกล</b> กว่า</li>
+        <li>r = ระยะจากแกนถึงขอบที่ <b>ใกล้</b> กว่า</li>
+        <li>ถ้าแกนหมุนผ่านกลางพื้นที่ จะได้ r = 0 คือจานตัน</li>
+        <li>หมุนรอบแกนนอน y = c → ปริพันธ์เทียบ dx; หมุนรอบแกนตั้ง x = c → ปริพันธ์เทียบ dy</li>
+      </ul>
+    </div>
+    <div class="card b">
+      <h3>วิธีเปลือกทรงกระบอก</h3>
+      <div class="tagline">CYLINDRICAL SHELLS · ขนานกับแกน</div>
+      <p>ตัดพื้นที่ด้วยแถบที่ <b>ขนาน</b> กับแกนหมุน แถบจะกวาดเป็นผิวทรงกระบอกบาง ๆ คลี่ออกได้เป็นแผ่นสี่เหลี่ยม กว้าง 2πr สูง h หนา Δ</p>
+      <div class="eq">V = 2π ∫ₐᵇ r(x) · h(x) dx</div>
+      <ul>
+        <li>r = ระยะจากแกนหมุนถึงแถบ</li>
+        <li>h = ความสูงของแถบ = |f − g|</li>
+        <li>เหมาะเมื่อหมุนรอบแกนตั้งแต่ฟังก์ชันเขียนในรูป y = f(x) — ไม่ต้องแก้สมการกลับเป็น x = f⁻¹(y)</li>
+      </ul>
+    </div>
+    <div class="card c">
+      <h3>เลือกวิธีไหนดี</h3>
+      <div class="tagline">RULE OF THUMB</div>
+      <p>ดูว่าแถบตัดขวางวางตัวอย่างไรเทียบกับแกนหมุน แล้วเลือกวิธีที่ทำให้ <b>ไม่ต้องแก้สมการกลับ</b> และ <b>ไม่ต้องแบ่งปริพันธ์หลายช่วง</b></p>
+      <ul>
+        <li>y = f(x) หมุนรอบแกนนอน → จานหมุน (dx)</li>
+        <li>y = f(x) หมุนรอบแกนตั้ง → เปลือก (dx)</li>
+        <li>x = g(y) หมุนรอบแกนตั้ง → จานหมุน (dy)</li>
+        <li>x = g(y) หมุนรอบแกนนอน → เปลือก (dy)</li>
+      </ul>
+      <p style="margin-top:10px">ทั้งสองวิธีต้องให้คำตอบเท่ากันเสมอ ลองสลับแท็บดูค่าปริมาตรเทียบกัน</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>คำนวณเชิงตัวเลขด้วยกฎซิมป์สัน · ภาพสามมิติสร้างด้วย three.js</span>
+    <span>ลากบนภาพเพื่อหมุน · ดับเบิลคลิกเพื่อคืนมุมมองเริ่มต้น</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   1. ตัวแปลงนิพจน์คณิตศาสตร์  (tokenizer → parser → AST)
+   ============================================================ */
+function PErr(msg, pos){ this.message = msg; this.pos = pos; }
+
+var FN1 = {
+  sin: Math.sin, cos: Math.cos, tan: Math.tan,
+  asin: Math.asin, acos: Math.acos, atan: Math.atan,
+  sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+  sec: function(v){ return 1/Math.cos(v); },
+  csc: function(v){ return 1/Math.sin(v); },
+  cot: function(v){ return 1/Math.tan(v); },
+  ln: Math.log, log: function(v){ return Math.log(v)/Math.LN10; },
+  exp: Math.exp, sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs,
+  floor: Math.floor, ceil: Math.ceil, sign: Math.sign
+};
+var CONSTS = { pi: Math.PI, e: Math.E, tau: Math.PI*2 };
+
+function tokenize(src){
+  var t = [], i = 0, n = src.length;
+  function isD(c){ return c >= '0' && c <= '9'; }
+  while(i < n){
+    var c = src[i];
+    if(c === ' ' || c === '\t'){ i++; continue; }
+    if(isD(c) || (c === '.' && isD(src[i+1]))){
+      var j = i;
+      while(j < n && (isD(src[j]) || src[j] === '.')) j++;
+      t.push({ k:'num', v:parseFloat(src.slice(i,j)), p:i }); i = j; continue;
+    }
+    if(/[A-Za-z]/.test(c)){
+      var j2 = i;
+      while(j2 < n && /[A-Za-z0-9]/.test(src[j2])) j2++;
+      t.push({ k:'id', v:src.slice(i,j2), p:i }); i = j2; continue;
+    }
+    if('+-*/^(),'.indexOf(c) >= 0){ t.push({ k:c, p:i }); i++; continue; }
+    if(c === '×'){ t.push({ k:'*', p:i }); i++; continue; }
+    if(c === '÷'){ t.push({ k:'/', p:i }); i++; continue; }
+    if(c === '−' || c === '–'){ t.push({ k:'-', p:i }); i++; continue; }
+    if(c === 'π'){ t.push({ k:'id', v:'pi', p:i }); i++; continue; }
+    if(c === '√'){ t.push({ k:'id', v:'sqrt', p:i }); i++; continue; }
+    if(c === '|'){ t.push({ k:'|', p:i }); i++; continue; }
+    if(c === '[' || c === '{'){ t.push({ k:'(', p:i }); i++; continue; }
+    if(c === ']' || c === '}'){ t.push({ k:')', p:i }); i++; continue; }
+    throw new PErr('ใช้สัญลักษณ์ "' + c + '" ไม่ได้', i);
+  }
+  t.push({ k:'end', p:n });
+  return t;
+}
+
+function parse(src){
+  var ts = tokenize(src), i = 0;
+  function peek(){ return ts[i]; }
+  function eat(k){
+    if(ts[i].k !== k) throw new PErr('ตรงนี้ควรเป็น "' + k + '"', ts[i].p);
+    return ts[i++];
+  }
+  function startsPrimary(tk){
+    return tk.k === 'num' || tk.k === 'id' || tk.k === '(' || tk.k === '|';
+  }
+  function expr(){
+    var a = term();
+    while(peek().k === '+' || peek().k === '-'){
+      var op = ts[i++].k;
+      a = { t:'bin', op:op, a:a, b:term() };
+    }
+    return a;
+  }
+  function term(){
+    var a = unary();
+    for(;;){
+      var k = peek().k;
+      if(k === '*' || k === '/'){ i++; a = { t:'bin', op:k, a:a, b:unary() }; }
+      else if(startsPrimary(peek())){ a = { t:'bin', op:'*', a:a, b:power(), implicit:true }; }
+      else break;
+    }
+    return a;
+  }
+  function unary(){
+    if(peek().k === '-'){ i++; return { t:'neg', a:unary() }; }
+    if(peek().k === '+'){ i++; return unary(); }
+    return power();
+  }
+  function power(){
+    var base = primary();
+    if(peek().k === '^'){ i++; return { t:'bin', op:'^', a:base, b:unary() }; }
+    return base;
+  }
+  function primary(){
+    var tk = peek();
+    if(tk.k === 'num'){ i++; return { t:'num', v:tk.v }; }
+    if(tk.k === '('){ i++; var e = expr(); eat(')'); return { t:'paren', a:e }; }
+    if(tk.k === '|'){ i++; var e2 = expr(); eat('|'); return { t:'call', f:'abs', a:e2, bars:true }; }
+    if(tk.k === 'id'){
+      var name = tk.v; i++;
+      if(FN1[name]){
+        var arg;
+        if(peek().k === '('){ i++; arg = expr(); eat(')'); }
+        else arg = power();
+        return { t:'call', f:name, a:arg };
+      }
+      if(name === 'x' || name === 'X') return { t:'var' };
+      if(CONSTS.hasOwnProperty(name)) return { t:'const', name:name, v:CONSTS[name] };
+      throw new PErr('ไม่รู้จัก "' + name + '"', tk.p);
+    }
+    throw new PErr('นิพจน์ไม่สมบูรณ์', tk.p);
+  }
+  var out = expr();
+  if(peek().k !== 'end') throw new PErr('มีอักขระเกินมา', peek().p);
+  return out;
+}
+
+function compile(nd){
+  switch(nd.t){
+    case 'num': { var v = nd.v; return function(){ return v; }; }
+    case 'const': { var cv = nd.v; return function(){ return cv; }; }
+    case 'var': return function(x){ return x; };
+    case 'paren': return compile(nd.a);
+    case 'neg': { var u = compile(nd.a); return function(x){ return -u(x); }; }
+    case 'call': { var f = FN1[nd.f], ar = compile(nd.a); return function(x){ return f(ar(x)); }; }
+    case 'bin': {
+      var A = compile(nd.a), B = compile(nd.b);
+      switch(nd.op){
+        case '+': return function(x){ return A(x) + B(x); };
+        case '-': return function(x){ return A(x) - B(x); };
+        case '*': return function(x){ return A(x) * B(x); };
+        case '/': return function(x){ return A(x) / B(x); };
+        case '^': return function(x){ return Math.pow(A(x), B(x)); };
+      }
+    }
+  }
+  return function(){ return NaN; };
+}
+
+/* ---------- ตัวเรนเดอร์นิพจน์เป็น HTML สวย ๆ ---------- */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function numTxt(v){
+  if(Math.abs(v - Math.round(v)) < 1e-12) return String(Math.round(v));
+  return String(parseFloat(v.toFixed(6)));
+}
+var PREC = { '+':1, '-':1, '*':2, '/':2, '^':4 };
+function toHtml(nd, parentPrec){
+  parentPrec = parentPrec || 0;
+  switch(nd.t){
+    case 'num': return esc(numTxt(nd.v));
+    case 'const': return nd.name === 'pi' ? 'π' : (nd.name === 'e' ? '<i>e</i>' : 'τ');
+    case 'var': return '<i>x</i>';
+    case 'paren': return toHtml(nd.a, parentPrec);
+    case 'neg': {
+      var inner = toHtml(nd.a, 3);
+      return parentPrec > 3 ? '(−' + inner + ')' : '−' + inner;
+    }
+    case 'call': {
+      if(nd.f === 'sqrt') return '<span class="rad"><span class="sg">√</span><span class="bd">' + toHtml(nd.a,0) + '</span></span>';
+      if(nd.f === 'cbrt') return '<span class="rad"><span class="sg">∛</span><span class="bd">' + toHtml(nd.a,0) + '</span></span>';
+      if(nd.f === 'abs') return '|' + toHtml(nd.a,0) + '|';
+      if(nd.f === 'exp') return '<i>e</i><sup>' + toHtml(nd.a,0) + '</sup>';
+      return '<span class="fn">' + nd.f + '</span>(' + toHtml(nd.a,0) + ')';
+    }
+    case 'bin': {
+      var op = nd.op, p = PREC[op];
+      if(op === '/'){
+        return '<span class="frac"><span class="nu">' + toHtml(nd.a,0) + '</span><span class="de">' + toHtml(nd.b,0) + '</span></span>';
+      }
+      if(op === '^'){
+        return toHtml(nd.a, 5) + '<sup>' + toHtml(nd.b,0) + '</sup>';
+      }
+      var sep = op === '*' ? (nd.implicit ? '' : '·') : (op === '+' ? ' + ' : ' − ');
+      var s = toHtml(nd.a, p) + sep + toHtml(nd.b, p + 1);
+      return parentPrec > p ? '(' + s + ')' : s;
+    }
+  }
+  return '';
+}
+
+/* ============================================================
+   2. แกนคำนวณเชิงตัวเลข
+   ============================================================ */
+function simpson(fn, lo, hi, m){
+  if(!(hi > lo)) return 0;
+  if(m % 2) m++;
+  var h = (hi - lo) / m, s = 0, v;
+  for(var i = 0; i <= m; i++){
+    v = fn(lo + i * h);
+    if(!isFinite(v)) v = 0;
+    s += (i === 0 || i === m) ? v : (i % 2 ? 4 * v : 2 * v);
+  }
+  return s * h / 3;
+}
+function fmt(v, d){
+  if(!isFinite(v)) return '—';
+  d = (d === undefined) ? 5 : d;
+  var a = Math.abs(v);
+  if(a !== 0 && (a < 1e-4 || a >= 1e6)) return v.toExponential(3);
+  return v.toFixed(d).replace(/\.?0+$/,'') || '0';
+}
+
+/* ============================================================
+   3. สถานะและแบบจำลองพื้นที่
+   ============================================================ */
+var S = {
+  fSrc:'x', gSrc:'x^2', aSrc:'0', bSrc:'1',
+  method:'disk', axisType:'h', axisSrc:'0',
+  n:10, sweep:360, opacity:0.85,
+  showSlices:true, showSolid:false, showRegion:true, spin:true
+};
+var M = {
+  ok:false, err:'', warn:'',
+  F:null, G:null, a:0, b:1, c:0,
+  xs:null, ylo:null, yhi:null, yMin:0, yMax:1,
+  extT:null, extLo:null, extHi:null,
+  area:0, vol:0, riem:0
+};
+var NS = 601, KY = 361;
+
+function evalConst(src, fallback){
+  try{
+    var v = compile(parse(src))(0);
+    return isFinite(v) ? v : fallback;
+  }catch(e){ return fallback; }
+}
+
+function buildModel(){
+  M.ok = false; M.err = ''; M.warn = '';
+  var fa, ga;
+  try{ fa = parse(S.fSrc); }catch(e){ M.err = 'f(x): ' + e.message; return; }
+  try{ ga = parse(S.gSrc); }catch(e){ M.err = 'g(x): ' + e.message; return; }
+  M.fAst = fa; M.gAst = ga;
+  M.F = compile(fa); M.G = compile(ga);
+  var a = evalConst(S.aSrc, 0), b = evalConst(S.bSrc, 1);
+  if(b < a){ var tmp = a; a = b; b = tmp; }
+  if(!(b > a)){ M.err = 'ต้องให้ a น้อยกว่า b'; return; }
+  M.a = a; M.b = b;
+  M.c = evalConst(S.axisSrc, 0);
+
+  var xs = new Float64Array(NS), lo = new Float64Array(NS), hi = new Float64Array(NS);
+  var bad = 0, yMin = Infinity, yMax = -Infinity;
+  for(var i = 0; i < NS; i++){
+    var x = a + (b - a) * i / (NS - 1);
+    var fv = M.F(x), gv = M.G(x);
+    if(!isFinite(fv) || !isFinite(gv)){ bad++; fv = isFinite(fv) ? fv : 0; gv = isFinite(gv) ? gv : 0; }
+    xs[i] = x;
+    lo[i] = Math.min(fv, gv); hi[i] = Math.max(fv, gv);
+    if(lo[i] < yMin) yMin = lo[i];
+    if(hi[i] > yMax) yMax = hi[i];
+  }
+  M.xs = xs; M.ylo = lo; M.yhi = hi;
+  if(!isFinite(yMin) || !isFinite(yMax)){ M.err = 'ฟังก์ชันให้ค่าที่ใช้ไม่ได้ในช่วงนี้'; return; }
+  if(yMax - yMin < 1e-12){ yMax = yMin + 1e-6; }
+  M.yMin = yMin; M.yMax = yMax;
+  if(bad > NS * 0.02) M.warn = 'ฟังก์ชันมีจุดที่หาค่าไม่ได้ในช่วง [a, b] ผลลัพธ์อาจคลาดเคลื่อน';
+
+  /* ตารางช่วงแนวนอนของพื้นที่ ที่ระดับ y แต่ละค่า */
+  var eT = new Float64Array(KY), eL = new Float64Array(KY), eH = new Float64Array(KY);
+  var eps = (yMax - yMin) * 1e-9;
+  for(var j = 0; j < KY; j++){
+    var y = yMin + (yMax - yMin) * j / (KY - 1);
+    var mn = Infinity, mx = -Infinity;
+    for(var k = 0; k < NS; k++){
+      if(y >= lo[k] - eps && y <= hi[k] + eps){
+        if(xs[k] < mn) mn = xs[k];
+        if(xs[k] > mx) mx = xs[k];
+      }
+    }
+    eT[j] = y;
+    if(mn <= mx){ eL[j] = mn; eH[j] = mx; }
+    else { eL[j] = NaN; eH[j] = NaN; }
+  }
+  M.extT = eT; M.extLo = eL; M.extHi = eH;
+  M.ok = true;
+}
+
+function extentAt(y){
+  var yMin = M.yMin, yMax = M.yMax;
+  if(y < yMin || y > yMax) return null;
+  var u = (y - yMin) / (yMax - yMin) * (KY - 1);
+  var i0 = Math.floor(u); if(i0 >= KY - 1) i0 = KY - 2; if(i0 < 0) i0 = 0;
+  var fr = u - i0;
+  var l0 = M.extLo[i0], l1 = M.extLo[i0+1], h0 = M.extHi[i0], h1 = M.extHi[i0+1];
+  if(isNaN(l0) && isNaN(l1)) return null;
+  if(isNaN(l0)){ l0 = l1; h0 = h1; }
+  if(isNaN(l1)){ l1 = l0; h1 = h0; }
+  return [l0 + (l1 - l0) * fr, h0 + (h1 - h0) * fr];
+}
+function spanX(x){
+  var f = M.F(x), g = M.G(x);
+  if(!isFinite(f)) f = 0; if(!isFinite(g)) g = 0;
+  return f < g ? [f, g] : [g, f];
+}
+function vertStrips(){ return (S.axisType === 'h') === (S.method === 'disk'); }
+function spanAt(t){ return vertStrips() ? spanX(t) : extentAt(t); }
+function stripRange(){ return vertStrips() ? [M.a, M.b] : [M.yMin, M.yMax]; }
+function solidSpanAt(t){ return S.axisType === 'h' ? spanX(t) : extentAt(t); }
+function solidRange(){ return S.axisType === 'h' ? [M.a, M.b] : [M.yMin, M.yMax]; }
+
+function radiiOf(lo, hi){
+  var c = M.c;
+  var d1 = Math.abs(lo - c), d2 = Math.abs(hi - c);
+  var crosses = (lo - c) * (hi - c) < 0;
+  return { R: Math.max(d1, d2), r: crosses ? 0 : Math.min(d1, d2) };
+}
+
+/* ---------- ปริมาตรและพื้นที่ ---------- */
+function computeAll(){
+  if(!M.ok) return;
+  M.area = simpson(function(x){ var s = spanX(x); return s[1] - s[0]; }, M.a, M.b, 800);
+
+  var rg = stripRange(), t0 = rg[0], t1 = rg[1];
+  var integrand;
+  if(S.method === 'disk'){
+    integrand = function(t){
+      var s = spanAt(t); if(!s) return 0;
+      var rr = radiiOf(s[0], s[1]);
+      return Math.PI * (rr.R * rr.R - rr.r * rr.r);
+    };
+  } else {
+    integrand = function(t){
+      var s = spanAt(t); if(!s) return 0;
+      return 2 * Math.PI * Math.abs(t - M.c) * (s[1] - s[0]);
+    };
+  }
+  M.vol = simpson(integrand, t0, t1, vertStrips() ? 1000 : 600);
+
+  var n = S.n, d = (t1 - t0) / n, sum = 0;
+  for(var i = 0; i < n; i++){
+    sum += integrand(t0 + (i + 0.5) * d) * d;
+  }
+  M.riem = sum;
+}
+
+function sliceList(n){
+  var rg = stripRange(), t0 = rg[0], t1 = rg[1], d = (t1 - t0) / n, out = [];
+  for(var i = 0; i < n; i++){
+    var ta = t0 + i * d, tb = ta + d, tm = ta + d / 2;
+    var s = spanAt(tm);
+    out.push({ t0:ta, t1:tb, tm:tm, lo:s ? s[0] : 0, hi:s ? s[1] : 0, d:d, empty:!s });
+  }
+  return out;
+}
+
+/* ---------- หาจุดตัดของสองเส้น ---------- */
+function findRoots(lo, hi){
+  var diff = function(x){ var v = M.F(x) - M.G(x); return isFinite(v) ? v : NaN; };
+  var N = 4000, roots = [], prevX = lo, prevV = diff(lo);
+  for(var i = 1; i <= N; i++){
+    var x = lo + (hi - lo) * i / N, v = diff(x);
+    if(isFinite(prevV) && isFinite(v)){
+      if(prevV === 0) roots.push(prevX);
+      else if(prevV * v < 0){
+        var A = prevX, B = x, fa = prevV;
+        for(var k = 0; k < 60; k++){
+          var mid = (A + B) / 2, fm = diff(mid);
+          if(!isFinite(fm)) break;
+          if(fa * fm <= 0) B = mid; else { A = mid; fa = fm; }
+        }
+        roots.push((A + B) / 2);
+      }
+    }
+    prevX = x; prevV = v;
+  }
+  var out = [];
+  for(var j = 0; j < roots.length; j++){
+    if(!out.length || Math.abs(roots[j] - out[out.length-1]) > 1e-6) out.push(roots[j]);
+  }
+  return out;
+}
+
+/* ============================================================
+   4. ภาพสองมิติของพื้นที่ปิดล้อม
+   ============================================================ */
+var cv = document.getElementById('plot2d');
+var ctx = cv.getContext('2d');
+var view = { cx:0, cy:0, sc:60, ready:false };
+var hover = { on:false, idx:-1, wx:0, wy:0 };
+var CS = getComputedStyle(document.documentElement);
+function cvar(n){ return CS.getPropertyValue(n).trim(); }
+
+function sizeCanvas(){
+  var r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, Math.round(r.width * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { w:r.width, h:r.height };
+}
+function fitView(){
+  if(!M.ok) return;
+  var x0 = M.a, x1 = M.b, y0 = M.yMin, y1 = M.yMax;
+  if(S.axisType === 'h'){ y0 = Math.min(y0, M.c); y1 = Math.max(y1, M.c); }
+  else { x0 = Math.min(x0, M.c); x1 = Math.max(x1, M.c); }
+  var dx = Math.max(x1 - x0, 1e-6), dy = Math.max(y1 - y0, 1e-6);
+  var r = cv.getBoundingClientRect(), w = r.width || 600, h = r.height || 420;
+  var sc = Math.min((w - 70) / dx, (h - 60) / dy);
+  view.cx = (x0 + x1) / 2; view.cy = (y0 + y1) / 2;
+  view.sc = sc > 0 ? sc : 60; view.ready = true;
+}
+function niceStep(sc, target){
+  var raw = target / sc, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+  var f = raw / mag, s = f >= 5 ? 5 : (f >= 2 ? 2 : 1);
+  return s * mag;
+}
+
+function draw2d(){
+  var d = sizeCanvas(), W = d.w, H = d.h;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = cvar('--canvas-bg'); ctx.fillRect(0, 0, W, H);
+  if(!view.ready) fitView();
+  var sc = view.sc;
+  function X(x){ return W/2 + (x - view.cx) * sc; }
+  function Y(y){ return H/2 - (y - view.cy) * sc; }
+  function wx(px){ return view.cx + (px - W/2) / sc; }
+  function wy(py){ return view.cy - (py - H/2) / sc; }
+
+  if(!M.ok){
+    ctx.fillStyle = cvar('--ink-3');
+    ctx.font = '13px "IBM Plex Sans Thai", sans-serif';
+    ctx.fillText(M.err || 'พิมพ์ฟังก์ชันให้ถูกต้องก่อน', 18, 28);
+    return;
+  }
+
+  /* --- เส้นตาราง --- */
+  var st = niceStep(sc, 78);
+  var xa = Math.ceil(wx(0) / st) * st, xb = wx(W), ya = Math.ceil(wy(H) / st) * st, yb = wy(0);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = cvar('--grid');
+  ctx.beginPath();
+  for(var gx = xa; gx <= xb; gx += st){ var px = Math.round(X(gx)) + .5; ctx.moveTo(px, 0); ctx.lineTo(px, H); }
+  for(var gy = ya; gy <= yb; gy += st){ var py = Math.round(Y(gy)) + .5; ctx.moveTo(0, py); ctx.lineTo(W, py); }
+  ctx.stroke();
+  ctx.strokeStyle = cvar('--grid-2'); ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(0, Math.round(Y(0)) + .5); ctx.lineTo(W, Math.round(Y(0)) + .5);
+  ctx.moveTo(Math.round(X(0)) + .5, 0); ctx.lineTo(Math.round(X(0)) + .5, H);
+  ctx.stroke();
+  ctx.fillStyle = cvar('--ink-3');
+  ctx.font = '10.5px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for(var gx2 = xa; gx2 <= xb; gx2 += st){
+    if(Math.abs(gx2) < st * 1e-6) continue;
+    ctx.fillText(numTxt(gx2), X(gx2), Math.min(Math.max(Y(0) + 4, 2), H - 14));
+  }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for(var gy2 = ya; gy2 <= yb; gy2 += st){
+    if(Math.abs(gy2) < st * 1e-6) continue;
+    ctx.fillText(numTxt(gy2), Math.min(Math.max(X(0) - 5, 26), W - 3), Y(gy2));
+  }
+
+  /* --- พื้นที่ปิดล้อม --- */
+  function regionPath(){
+    ctx.beginPath();
+    ctx.moveTo(X(M.xs[0]), Y(M.yhi[0]));
+    for(var i = 1; i < NS; i++) ctx.lineTo(X(M.xs[i]), Y(M.yhi[i]));
+    for(var j = NS - 1; j >= 0; j--) ctx.lineTo(X(M.xs[j]), Y(M.ylo[j]));
+    ctx.closePath();
+  }
+  regionPath();
+  ctx.fillStyle = cvar('--region'); ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.strokeStyle = cvar('--region-line'); ctx.globalAlpha = .22; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for(var hh = -H; hh < W + H; hh += 7){ ctx.moveTo(hh, 0); ctx.lineTo(hh + H, H); }
+  ctx.stroke(); ctx.restore();
+
+  /* --- แถบตัดขวาง --- */
+  var slices = null;
+  if(S.showSlices){
+    slices = sliceList(S.n);
+    ctx.lineWidth = 1;
+    for(var k = 0; k < slices.length; k++){
+      var s = slices[k];
+      if(s.empty) continue;
+      var rx0, ry0, rx1, ry1;
+      if(vertStrips()){ rx0 = X(s.t0); rx1 = X(s.t1); ry0 = Y(s.hi); ry1 = Y(s.lo); }
+      else { rx0 = X(s.lo); rx1 = X(s.hi); ry0 = Y(s.t1); ry1 = Y(s.t0); }
+      var isHov = (k === hover.idx);
+      ctx.fillStyle = isHov ? cvar('--ink-a-soft') : cvar('--strip');
+      ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
+      ctx.strokeStyle = cvar('--strip-line');
+      ctx.globalAlpha = isHov ? 1 : .75;
+      ctx.strokeRect(rx0 + .5, ry0 + .5, rx1 - rx0 - 1, ry1 - ry0 - 1);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* --- เส้นโค้ง f, g --- */
+  function curve(fn, color){
+    ctx.strokeStyle = color; ctx.lineJoin = 'round';
+    for(var pass = 0; pass < 2; pass++){
+      ctx.lineWidth = pass ? 2.6 : 1.2;
+      ctx.globalAlpha = pass ? 1 : .38;
+      ctx.beginPath();
+      var down = false, prevY = null;
+      for(var px = 0; px <= W; px += 1){
+        var x = wx(px);
+        var inside = x >= M.a - 1e-12 && x <= M.b + 1e-12;
+        if((pass === 1) !== inside){ down = false; prevY = null; continue; }
+        var y = fn(x);
+        if(!isFinite(y) || Math.abs(y) > 1e7){ down = false; prevY = null; continue; }
+        var py = Y(y);
+        if(prevY !== null && Math.abs(py - prevY) > H * 3){ down = false; }
+        if(!down){ ctx.moveTo(px, py); down = true; } else ctx.lineTo(px, py);
+        prevY = py;
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  curve(M.G, cvar('--ink-b'));
+  curve(M.F, cvar('--ink-a'));
+
+  /* --- ขอบเขต a, b --- */
+  ctx.setLineDash([2, 3]); ctx.strokeStyle = cvar('--ink-3'); ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(X(M.a), 0); ctx.lineTo(X(M.a), H);
+  ctx.moveTo(X(M.b), 0); ctx.lineTo(X(M.b), H);
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = cvar('--ink-3'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.font = '11px "IBM Plex Mono", monospace';
+  ctx.fillText('a', X(M.a), 6); ctx.fillText('b', X(M.b), 6);
+
+  /* --- แกนหมุน --- */
+  ctx.setLineDash([9, 5]); ctx.strokeStyle = cvar('--ink-c'); ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  if(S.axisType === 'h'){ ctx.moveTo(0, Y(M.c)); ctx.lineTo(W, Y(M.c)); }
+  else { ctx.moveTo(X(M.c), 0); ctx.lineTo(X(M.c), H); }
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = cvar('--ink-c'); ctx.font = '600 11.5px "IBM Plex Mono", monospace';
+  if(S.axisType === 'h'){ ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText('y = ' + numTxt(M.c), 8, Y(M.c) - 4); }
+  else { ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('x = ' + numTxt(M.c), X(M.c) + 6, 6); }
+
+  /* --- คำอธิบายรัศมีของแถบที่ชี้อยู่ --- */
+  var probe = document.getElementById('probe');
+  if(hover.on && slices && hover.idx >= 0 && hover.idx < slices.length && !slices[hover.idx].empty){
+    var s2 = slices[hover.idx], txt;
+    ctx.lineWidth = 2; ctx.strokeStyle = cvar('--ink-c');
+    if(S.method === 'disk'){
+      var rr = radiiOf(s2.lo, s2.hi);
+      var far = (Math.abs(s2.hi - M.c) >= Math.abs(s2.lo - M.c)) ? s2.hi : s2.lo;
+      ctx.beginPath();
+      if(vertStrips()){ ctx.moveTo(X(s2.tm), Y(M.c)); ctx.lineTo(X(s2.tm), Y(far)); }
+      else { ctx.moveTo(X(M.c), Y(s2.tm)); ctx.lineTo(X(far), Y(s2.tm)); }
+      ctx.stroke();
+      txt = '<b>R</b> = ' + fmt(rr.R,3) + ' &nbsp; <b>r</b> = ' + fmt(rr.r,3) +
+            '<br>ΔV = π(R²−r²)Δ = ' + fmt(Math.PI*(rr.R*rr.R - rr.r*rr.r)*s2.d, 4);
+    } else {
+      var rad = Math.abs(s2.tm - M.c), hgt = s2.hi - s2.lo;
+      ctx.beginPath();
+      if(vertStrips()){ ctx.moveTo(X(M.c), Y((s2.lo+s2.hi)/2)); ctx.lineTo(X(s2.tm), Y((s2.lo+s2.hi)/2)); }
+      else { ctx.moveTo(X((s2.lo+s2.hi)/2), Y(M.c)); ctx.lineTo(X((s2.lo+s2.hi)/2), Y(s2.tm)); }
+      ctx.stroke();
+      txt = '<b>r</b> = ' + fmt(rad,3) + ' &nbsp; <b>h</b> = ' + fmt(hgt,3) +
+            '<br>ΔV = 2πrhΔ = ' + fmt(2*Math.PI*rad*hgt*s2.d, 4);
+    }
+    probe.innerHTML = (vertStrips() ? 'x' : 'y') + ' = ' + fmt(s2.tm,3) + '<br>' + txt;
+  } else if(hover.on){
+    probe.innerHTML = 'x = ' + fmt(hover.wx,3) + ' &nbsp; y = ' + fmt(hover.wy,3);
+  } else {
+    probe.innerHTML = 'เลื่อนเมาส์บนกราฟเพื่อดูรัศมีของแต่ละชิ้น';
+  }
+}
+
+/* ============================================================
+   5. ภาพสามมิติของทรงตัน
+   ============================================================ */
+var renderer, scene, cam, root, has3d = (typeof THREE !== 'undefined');
+var orb = { th:0.86, ph:1.12, r:9.2, drag:false, px:0, py:0 };
+var v3 = document.getElementById('view3d');
+
+function init3d(){
+  if(!has3d) return;
+  renderer = new THREE.WebGLRenderer({ canvas:v3, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  scene = new THREE.Scene();
+  cam = new THREE.PerspectiveCamera(40, 1.6, 0.05, 400);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x555566, 0.9));
+  var d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(6, 9, 7); scene.add(d1);
+  var d2 = new THREE.DirectionalLight(0xffffff, 0.32); d2.position.set(-7, -4, -6); scene.add(d2);
+  root = new THREE.Group(); scene.add(root);
+  resize3d();
+}
+function resize3d(){
+  if(!renderer) return;
+  var r = v3.getBoundingClientRect();
+  if(r.width < 2) return;
+  renderer.setSize(r.width, r.height, false);
+  cam.aspect = r.width / Math.max(r.height, 1);
+  cam.updateProjectionMatrix();
+}
+function clearRoot(){
+  for(var i = root.children.length - 1; i >= 0; i--){
+    var o = root.children[i];
+    if(o.geometry) o.geometry.dispose();
+    if(o.material && o.material.dispose) o.material.dispose();
+    root.remove(o);
+  }
+}
+function sweepInfo(){
+  var len = S.sweep / 360 * Math.PI * 2, side;
+  if(S.axisType === 'h') side = (M.yMin >= M.c - 1e-9) ? 1 : ((M.yMax <= M.c + 1e-9) ? -1 : 1);
+  else side = (M.a >= M.c - 1e-9) ? 1 : ((M.b <= M.c + 1e-9) ? -1 : 1);
+  var start = (S.axisType === 'v')
+    ? (side > 0 ? Math.PI/2 : -Math.PI/2)
+    : (side > 0 ? -Math.PI/2 : Math.PI/2);
+  return { start:start, len:len };
+}
+function mat(colorStr, op, shiny){
+  return new THREE.MeshStandardMaterial({
+    color: new THREE.Color(colorStr),
+    roughness: shiny ? 0.35 : 0.62,
+    metalness: 0.06,
+    side: THREE.DoubleSide,
+    transparent: op < 0.995,
+    opacity: op,
+    depthWrite: op > 0.9,
+    flatShading: false
+  });
+}
+function orientH(mesh){ mesh.rotation.z = -Math.PI/2; }
+
+function build3d(){
+  if(!renderer || !M.ok) return;
+  clearRoot();
+  var sw = sweepInfo(), op = S.opacity;
+  var cA = new THREE.Color(cvar('--ink-a')), cB = new THREE.Color(cvar('--ink-b')), cC = cvar('--ink-c');
+  var isH = (S.axisType === 'h');
+  var srg = solidRange(), st0 = srg[0], st1 = srg[1];
+  var Rmax = 0, K = 150, i, t, s, q;
+
+  for(i = 0; i <= K; i++){
+    t = st0 + (st1 - st0) * i / K;
+    s = solidSpanAt(t);
+    if(s){ q = radiiOf(s[0], s[1]); if(q.R > Rmax) Rmax = q.R; }
+  }
+  if(Rmax < 1e-6) Rmax = 1e-6;
+
+  /* --- ทรงตันเรียบ --- */
+  if(S.showSolid){
+    var outer = [], inner = [];
+    for(i = 0; i <= K; i++){
+      t = st0 + (st1 - st0) * i / K;
+      s = solidSpanAt(t);
+      var R = 0, r = 0;
+      if(s){ q = radiiOf(s[0], s[1]); R = q.R; r = q.r; }
+      outer.push(new THREE.Vector2(Math.max(R, 0), t));
+      inner.push(new THREE.Vector2(Math.max(r, 0), t));
+    }
+    var pts = [new THREE.Vector2(inner[0].x, inner[0].y)];
+    for(i = 0; i <= K; i++) pts.push(outer[i]);
+    for(i = K; i >= 0; i--) pts.push(inner[i]);
+    var gs = new THREE.LatheGeometry(pts, 128, sw.start, sw.len);
+    var ms = new THREE.Mesh(gs, mat(cC, S.showSlices ? Math.min(op, 0.35) : op, true));
+    if(isH) orientH(ms);
+    root.add(ms);
+  }
+
+  /* --- จาน / เปลือก --- */
+  if(S.showSlices){
+    var list = sliceList(S.n), n = list.length;
+    for(var k = 0; k < n; k++){
+      var sl = list[k];
+      if(sl.empty) continue;
+      var tint = cA.clone().lerp(cB, n > 1 ? k / (n - 1) : 0);
+      var g, m;
+      if(S.method === 'disk'){
+        var rr = radiiOf(sl.lo, sl.hi);
+        if(rr.R <= 1e-7) continue;
+        var h = Math.abs(sl.d) * 0.94, prof = [];
+        if(rr.r > 1e-7){
+          prof.push(new THREE.Vector2(rr.r, -h/2));
+          prof.push(new THREE.Vector2(rr.R, -h/2));
+          prof.push(new THREE.Vector2(rr.R,  h/2));
+          prof.push(new THREE.Vector2(rr.r,  h/2));
+          prof.push(new THREE.Vector2(rr.r, -h/2));
+        } else {
+          prof.push(new THREE.Vector2(0.0000001, -h/2));
+          prof.push(new THREE.Vector2(rr.R, -h/2));
+          prof.push(new THREE.Vector2(rr.R,  h/2));
+          prof.push(new THREE.Vector2(0.0000001, h/2));
+        }
+        g = new THREE.LatheGeometry(prof, 72, sw.start, sw.len);
+        m = new THREE.Mesh(g, mat('#000', op, false));
+        m.material.color = tint;
+        if(isH){ orientH(m); m.position.x = sl.tm; } else { m.position.y = sl.tm; }
+      } else {
+        var rad = Math.max(Math.abs(sl.tm - M.c), 1e-5);
+        var hh = sl.hi - sl.lo;
+        if(hh <= 1e-9) continue;
+        g = new THREE.CylinderGeometry(rad, rad, hh, 72, 1, true, sw.start, sw.len);
+        m = new THREE.Mesh(g, mat('#000', Math.min(op, 0.92), false));
+        m.material.color = tint;
+        if(isH){ orientH(m); m.position.x = (sl.lo + sl.hi) / 2; }
+        else { m.position.y = (sl.lo + sl.hi) / 2; }
+      }
+      root.add(m);
+    }
+  }
+
+  /* --- พื้นที่ต้นแบบบนระนาบ --- */
+  if(S.showRegion){
+    var shape = new THREE.Shape(), step = 6, first = true;
+    for(i = 0; i < NS; i += step){
+      var u = isH ? M.xs[i] : M.xs[i] - M.c;
+      var v = isH ? M.yhi[i] - M.c : M.yhi[i];
+      if(first){ shape.moveTo(u, v); first = false; } else shape.lineTo(u, v);
+    }
+    for(i = NS - 1; i >= 0; i -= step){
+      shape.lineTo(isH ? M.xs[i] : M.xs[i] - M.c, isH ? M.ylo[i] - M.c : M.ylo[i]);
+    }
+    shape.closePath();
+    var gr = new THREE.ShapeGeometry(shape);
+    var mr = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(cvar('--region-line')),
+      transparent:true, opacity:0.5, side:THREE.DoubleSide, depthWrite:false
+    });
+    root.add(new THREE.Mesh(gr, mr));
+  }
+
+  /* --- แกนหมุน --- */
+  var L = Math.max(st1 - st0, 2 * Rmax) * 0.72;
+  var mid = (st0 + st1) / 2;
+  var ap = isH
+    ? [new THREE.Vector3(mid - L, 0, 0), new THREE.Vector3(mid + L, 0, 0)]
+    : [new THREE.Vector3(0, mid - L, 0), new THREE.Vector3(0, mid + L, 0)];
+  var gl = new THREE.BufferGeometry().setFromPoints(ap);
+  root.add(new THREE.Line(gl, new THREE.LineBasicMaterial({ color:new THREE.Color(cvar('--ink-c')) })));
+
+  /* --- จัดขนาดและกึ่งกลาง --- */
+  var size = Math.max(st1 - st0, 2 * Rmax, 1e-3);
+  var sc = 4.7 / size;
+  root.scale.setScalar(sc);
+  root.position.set(0, 0, 0);
+  if(isH) root.position.x = -mid * sc; else root.position.y = -mid * sc;
+}
+
+function tick(){
+  requestAnimationFrame(tick);
+  if(!renderer) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(S.spin && !orb.drag && !reduce) orb.th += 0.0032;
+  var ph = Math.max(0.08, Math.min(Math.PI - 0.08, orb.ph));
+  cam.position.set(
+    orb.r * Math.sin(ph) * Math.sin(orb.th),
+    orb.r * Math.cos(ph),
+    orb.r * Math.sin(ph) * Math.cos(orb.th)
+  );
+  cam.lookAt(0, 0, 0);
+  renderer.render(scene, cam);
+}
+
+/* ============================================================
+   6. เชื่อมส่วนติดต่อผู้ใช้
+   ============================================================ */
+var $ = function(id){ return document.getElementById(id); };
+var fIn = $('fIn'), gIn = $('gIn'), aIn = $('aIn'), bIn = $('bIn'), axValIn = $('axValIn'), axTypeIn = $('axTypeIn');
+var lastField = fIn;
+
+function fieldName(el){
+  return el === fIn ? 'f(x)' : el === gIn ? 'g(x)' : el === aIn ? 'a' : el === bIn ? 'b' : 'c';
+}
+[fIn, gIn, aIn, bIn, axValIn].forEach(function(el){
+  el.addEventListener('focus', function(){
+    lastField = el;
+    $('kpTarget').textContent = 'กำลังพิมพ์ลงช่อง ' + fieldName(el);
+  });
+  el.addEventListener('input', function(){ readInputs(); refresh(true); });
+});
+axTypeIn.addEventListener('change', function(){ readInputs(); refresh(true); });
+
+function readInputs(){
+  S.fSrc = fIn.value; S.gSrc = gIn.value;
+  S.aSrc = aIn.value; S.bSrc = bIn.value;
+  S.axisSrc = axValIn.value; S.axisType = axTypeIn.value;
+}
+
+/* ---------- แป้นพิมพ์คณิตศาสตร์ ---------- */
+document.querySelectorAll('.k').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var el = lastField || fIn;
+    var act = btn.getAttribute('data-act');
+    if(act === 'clear'){ el.value = ''; }
+    else if(act === 'back'){
+      var s0 = el.selectionStart, e0 = el.selectionEnd;
+      if(s0 === e0 && s0 > 0) el.value = el.value.slice(0, s0 - 1) + el.value.slice(s0);
+      else el.value = el.value.slice(0, s0) + el.value.slice(e0);
+      el.focus(); el.setSelectionRange(Math.max(0, s0 - (s0 === e0 ? 1 : 0)), Math.max(0, s0 - (s0 === e0 ? 1 : 0)));
+      readInputs(); refresh(true); return;
+    } else {
+      var raw = btn.getAttribute('data-ins');
+      var cpos = raw.indexOf('|');
+      var body = cpos >= 0 ? raw.slice(0, cpos) + raw.slice(cpos + 1) : raw;
+      var caret = cpos >= 0 ? cpos : body.length;
+      var s1 = el.selectionStart, e1 = el.selectionEnd, v = el.value;
+      el.value = v.slice(0, s1) + body + v.slice(e1);
+      el.focus(); el.setSelectionRange(s1 + caret, s1 + caret);
+      readInputs(); refresh(true); return;
+    }
+    el.focus();
+    readInputs(); refresh(true);
+  });
+});
+
+/* ---------- แท็บวิธีการ ---------- */
+document.querySelectorAll('#tabs button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#tabs button').forEach(function(o){ o.setAttribute('aria-selected', String(o === b)); });
+    S.method = b.getAttribute('data-m');
+    refresh(false);
+  });
+});
+
+/* ---------- สไลเดอร์และสวิตช์ ---------- */
+$('nSlider').addEventListener('input', function(){ S.n = +this.value; refresh(false); });
+$('sweepSlider').addEventListener('input', function(){ S.sweep = +this.value; refresh(false); });
+$('opSlider').addEventListener('input', function(){ S.opacity = +this.value / 100; refresh(false); });
+$('cbSlices').addEventListener('change', function(){ S.showSlices = this.checked; refresh(false); });
+$('cbSolid').addEventListener('change', function(){ S.showSolid = this.checked; refresh(false); });
+$('cbRegion').addEventListener('change', function(){ S.showRegion = this.checked; refresh(false); });
+$('cbSpin').addEventListener('change', function(){ S.spin = this.checked; });
+
+/* ---------- ปุ่ม ---------- */
+$('btnFit').addEventListener('click', function(){ fitView(); draw2d(); });
+$('btnRoots').addEventListener('click', function(){
+  if(!M.ok) return;
+  var lo = Math.min(M.a, -12), hi = Math.max(M.b, 12);
+  var rts = findRoots(lo, hi);
+  if(rts.length < 2){ flash('หาจุดตัดไม่พบอย่างน้อย 2 จุดในช่วง [' + numTxt(lo) + ', ' + numTxt(hi) + ']'); return; }
+  aIn.value = fmt(rts[0], 6); bIn.value = fmt(rts[rts.length - 1], 6);
+  readInputs(); refresh(true);
+  flash('พบจุดตัด ' + rts.length + ' จุด: ' + rts.map(function(v){ return fmt(v, 4); }).join(', '));
+});
+function preset(f, g, a, b, method, at, c){
+  fIn.value = f; gIn.value = g; aIn.value = a; bIn.value = b;
+  axTypeIn.value = at; axValIn.value = c;
+  S.method = method;
+  document.querySelectorAll('#tabs button').forEach(function(o){
+    o.setAttribute('aria-selected', String(o.getAttribute('data-m') === method));
+  });
+  readInputs(); refresh(true);
+}
+$('btnEx1').addEventListener('click', function(){ preset('4-x^2', '1', '-sqrt(3)', 'sqrt(3)', 'disk', 'h', '0'); });
+$('btnEx2').addEventListener('click', function(){ preset('2x-x^2', '0', '0', '2', 'shell', 'v', '0'); });
+$('btnEx3').addEventListener('click', function(){ preset('sqrt(1-x^2)', '-sqrt(1-x^2)', '-1', '1', 'disk', 'h', '2'); });
+
+var flashTimer = null;
+function flash(msg){
+  var w = $('warnBox');
+  w.hidden = false; w.textContent = msg;
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(function(){ updateWarn(); }, 5000);
+}
+function updateWarn(){
+  var w = $('warnBox'), msgs = [];
+  if(M.err) msgs.push(M.err);
+  if(M.warn) msgs.push(M.warn);
+  if(M.ok && !vertStrips()) msgs.push('แถบตัดขวางวางตามแนวนอน ระบบคำนวณความกว้างของพื้นที่ที่ระดับ y แต่ละค่า โดยสมมติว่าพื้นที่เชื่อมต่อกันในแนวนอน');
+  if(!msgs.length){ w.hidden = true; return; }
+  w.hidden = false; w.textContent = msgs.join(' · ');
+}
+
+/* ---------- ข้อความผลลัพธ์ ---------- */
+function intg(lo, hi){
+  return '<span class="intg"><span class="s">∫</span><span class="lim"><span>' + hi + '</span><span>' + lo + '</span></span></span>';
+}
+function updateReadout(){
+  var pf = $('fPretty'), pg = $('gPretty');
+  try{ pf.innerHTML = toHtml(parse(S.fSrc), 0); }catch(e){ pf.innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
+  try{ pg.innerHTML = toHtml(parse(S.gSrc), 0); }catch(e2){ pg.innerHTML = '<span class="err">' + esc(e2.message) + '</span>'; }
+
+  $('legAxis').textContent = 'แกนหมุน ' + (S.axisType === 'h' ? 'y = ' : 'x = ') + (M.ok ? numTxt(M.c) : '?');
+  $('nEcho').textContent = S.n;
+  $('nVal').textContent = S.n;
+  $('nLab').textContent = S.method === 'disk' ? 'จำนวนจาน n' : 'จำนวนเปลือก n';
+  $('sweepVal').textContent = S.sweep + '°';
+  $('opVal').textContent = Math.round(S.opacity * 100) + '%';
+  $('s3title').textContent = S.method === 'disk' ? 'การซ้อนกันของจานหมุน' : 'การซ้อนกันของเปลือกทรงกระบอก';
+  $('s3hint').textContent = S.method === 'disk'
+    ? 'แต่ละจานคือแผ่นกลมหนา Δ ตั้งฉากกับแกนหมุน'
+    : 'แต่ละเปลือกคือผิวทรงกระบอกที่ขนานกับแกนหมุน';
+
+  if(!M.ok){
+    $('areaVal').textContent = '—'; $('volVal').textContent = '—';
+    $('riemannVal').textContent = '—'; $('riemannErr').textContent = '—';
+    $('volFormula').innerHTML = '';
+    $('v3Title').textContent = '—'; $('v3Sub').textContent = 'แก้ไขนิพจน์ให้ถูกต้อง';
+    updateWarn(); return;
+  }
+
+  var vs = vertStrips(), lo, hi, dvar;
+  if(vs){ lo = numTxt(round6(M.a)); hi = numTxt(round6(M.b)); dvar = 'dx'; }
+  else { lo = fmt(M.yMin, 3); hi = fmt(M.yMax, 3); dvar = 'dy'; }
+  var v = vs ? 'x' : 'y';
+  var body;
+  if(S.method === 'disk'){
+    body = 'π ' + intg(lo, hi) + ' [ R(' + v + ')² − r(' + v + ')² ] ' + dvar;
+    $('volLab').textContent = 'ปริมาตรด้วยวิธีจานหมุน / วงแหวน';
+  } else {
+    body = '2π ' + intg(lo, hi) + ' |' + v + ' − ' + numTxt(round6(M.c)) + '| · h(' + v + ') ' + dvar;
+    $('volLab').textContent = 'ปริมาตรด้วยวิธีเปลือกทรงกระบอก';
+  }
+  $('volFormula').innerHTML = 'V = ' + body;
+  $('areaVal').textContent = fmt(M.area, 5) + ' ตร.หน่วย';
+  $('volVal').textContent = fmt(M.vol, 5) + ' ลบ.หน่วย';
+  var piMult = M.vol / Math.PI;
+  $('volVal').title = '≈ ' + fmt(piMult, 5) + ' π';
+  $('riemannVal').textContent = fmt(M.riem, 5) + ' ลบ.หน่วย';
+  var relErr = M.vol !== 0 ? Math.abs(M.riem - M.vol) / Math.abs(M.vol) * 100 : 0;
+  $('riemannErr').textContent = 'คลาดเคลื่อน ' + fmt(relErr, 3) + ' %  ·  ≈ ' + fmt(piMult, 4) + ' π';
+
+  $('v3Title').textContent = 'หมุนรอบแกน ' + (S.axisType === 'h' ? 'y = ' : 'x = ') + numTxt(round6(M.c));
+  $('v3Sub').textContent = (S.method === 'disk' ? 'วิธีจานหมุน' : 'วิธีเปลือกทรงกระบอก') +
+    ' · n = ' + S.n + ' · V ≈ ' + fmt(M.vol, 4);
+  updateWarn();
+}
+function round6(v){ return Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) : parseFloat(v.toFixed(6)); }
+
+/* ---------- วงจรหลัก ---------- */
+var refitPending = true;
+function refresh(structural){
+  buildModel();
+  if(M.ok){
+    computeAll();
+    if(structural || refitPending){ fitView(); refitPending = false; }
+  }
+  updateReadout();
+  draw2d();
+  build3d();
+}
+
+/* ---------- การโต้ตอบบนกราฟสองมิติ ---------- */
+function toWorld(ev){
+  var r = cv.getBoundingClientRect();
+  var px = ev.clientX - r.left, py = ev.clientY - r.top;
+  return { x: view.cx + (px - r.width/2) / view.sc, y: view.cy - (py - r.height/2) / view.sc };
+}
+cv.addEventListener('mousemove', function(ev){
+  if(!M.ok) return;
+  var w = toWorld(ev);
+  hover.on = true; hover.wx = w.x; hover.wy = w.y;
+  var rg = stripRange(), t = vertStrips() ? w.x : w.y;
+  var idx = Math.floor((t - rg[0]) / ((rg[1] - rg[0]) / S.n));
+  hover.idx = (idx >= 0 && idx < S.n) ? idx : -1;
+  if(pan.on){
+    view.cx -= (ev.clientX - pan.px) / view.sc;
+    view.cy += (ev.clientY - pan.py) / view.sc;
+    pan.px = ev.clientX; pan.py = ev.clientY;
+  }
+  draw2d();
+});
+cv.addEventListener('mouseleave', function(){ hover.on = false; hover.idx = -1; pan.on = false; draw2d(); });
+var pan = { on:false, px:0, py:0 };
+cv.addEventListener('mousedown', function(ev){ pan.on = true; pan.px = ev.clientX; pan.py = ev.clientY; });
+window.addEventListener('mouseup', function(){ pan.on = false; });
+cv.addEventListener('wheel', function(ev){
+  ev.preventDefault();
+  var w = toWorld(ev), f = ev.deltaY < 0 ? 1.12 : 1/1.12;
+  view.sc *= f;
+  view.cx = w.x + (view.cx - w.x) / f;
+  view.cy = w.y + (view.cy - w.y) / f;
+  draw2d();
+}, { passive:false });
+cv.addEventListener('dblclick', function(){ fitView(); draw2d(); });
+
+/* ---------- การโต้ตอบบนภาพสามมิติ ---------- */
+v3.addEventListener('pointerdown', function(ev){
+  orb.drag = true; orb.px = ev.clientX; orb.py = ev.clientY;
+  v3.setPointerCapture(ev.pointerId);
+});
+v3.addEventListener('pointermove', function(ev){
+  if(!orb.drag) return;
+  orb.th -= (ev.clientX - orb.px) * 0.008;
+  orb.ph -= (ev.clientY - orb.py) * 0.008;
+  orb.ph = Math.max(0.08, Math.min(Math.PI - 0.08, orb.ph));
+  orb.px = ev.clientX; orb.py = ev.clientY;
+});
+v3.addEventListener('pointerup', function(ev){ orb.drag = false; try{ v3.releasePointerCapture(ev.pointerId); }catch(e){} });
+v3.addEventListener('wheel', function(ev){
+  ev.preventDefault();
+  orb.r *= ev.deltaY < 0 ? 0.92 : 1.085;
+  orb.r = Math.max(2.4, Math.min(30, orb.r));
+}, { passive:false });
+v3.addEventListener('dblclick', function(){ orb.th = 0.86; orb.ph = 1.12; orb.r = 9.2; });
+
+window.addEventListener('resize', function(){ resize3d(); fitView(); draw2d(); });
+if(window.matchMedia){
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if(mq.addEventListener) mq.addEventListener('change', function(){ setTimeout(function(){ draw2d(); build3d(); }, 60); });
+}
+
+/* ---------- เริ่มต้น ---------- */
+init3d();
+readInputs();
+refresh(true);
+resize3d();
+tick();
+setTimeout(function(){ resize3d(); fitView(); draw2d(); build3d(); }, 120);
+</script>
